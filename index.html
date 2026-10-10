@@ -28,6 +28,10 @@
             background-color: #090d16;
             color: #f8fafc;
             font-family: system-ui, -apple-system, sans-serif;
+            overflow-y: auto !important; /* Ensure vertical scrolling is always enabled */
+        }
+        canvas {
+            touch-action: pan-y; /* Allows smooth touch scrolling over canvases on mobile */
         }
         input[type="range"] {
             accent-color: #38bdf8;
@@ -43,7 +47,7 @@
                 Minkowski Spacetime & Relativistic Kinematics
             </h1>
             <p class="text-xs md:text-sm text-slate-400 max-w-2xl mx-auto">
-                Interactive dual-frame visualization of Lorentz transformations, four-vectors ($U \cdot A = 0$), Rindler hyperbolic accelerated motion, and Event Horizons.
+                Interactive dual-frame visualization of Lorentz transformations, four-vectors (\(U \cdot A = 0\)), Rindler hyperbolic accelerated motion, and Event Horizons.
             </p>
         </header>
 
@@ -158,7 +162,6 @@
             ctx.strokeStyle = '#1e293b';
             ctx.lineWidth = 1;
             
-            // Minor grid lines
             for (let x = originX % (scale * 0.5); x < width; x += scale * 0.5) {
                 ctx.beginPath();
                 ctx.moveTo(x, 0);
@@ -189,46 +192,42 @@
             tVal.textContent = t.toFixed(2);
 
             const gamma = 1.0 / Math.sqrt(Math.max(0.001, 1 - beta * beta));
-            const rho = 1.0 / g; // Characteristic length rho = c^2 / g (c=1)
+            const rho = 1.0 / g;
 
-            // Telemetry calculations
             const U0 = gamma;
             const U1 = gamma * beta;
             const A0 = Math.pow(gamma, 4) * beta * g;
             const A1 = Math.pow(gamma, 4) * g;
-            const dotProduct = -U0 * A0 + U1 * A1; // Minkowski signature (-1, 1)
+            const dotProduct = -U0 * A0 + U1 * A1;
 
             gammaDisplay.textContent = gamma.toFixed(3);
             uDisplay.textContent = `[${U0.toFixed(2)}, ${U1.toFixed(2)}]`;
             aDisplay.textContent = `[${A0.toFixed(2)}, ${A1.toFixed(2)}]`;
             orthoDisplay.textContent = dotProduct.toFixed(4);
 
-            // Render Lab Frame S
             renderLab(labCtx, labCanvas.width, labCanvas.height, beta, g, t, rho);
-            // Render Boosted Frame S'
             renderBoosted(boostedCtx, boostedCanvas.width, boostedCanvas.height, beta, g, t, rho);
         }
 
         function renderLab(ctx, width, height, beta, g, t, rho) {
             ctx.clearRect(0, 0, width, height);
-            const scale = width / 12; // 6 units in each direction (-6 to 6)
+            const scale = width / 12;
             const originX = width / 2;
             const originY = height / 2;
 
             drawGrid(ctx, width, height, scale, originX, originY);
 
-            // Lab Axes (ct, x)
             ctx.strokeStyle = '#64748b';
             ctx.lineWidth = 1.5;
             ctx.beginPath();
-            ctx.moveTo(0, originY); ctx.lineTo(width, originY); // x axis
-            ctx.moveTo(originX, 0); ctx.lineTo(originX, height); // ct axis
+            ctx.moveTo(0, originY); ctx.lineTo(width, originY);
+            ctx.moveTo(originX, 0); ctx.lineTo(originX, height);
             ctx.stroke();
 
             drawAxisLabel(ctx, 'ct', originX + 8, 16);
             drawAxisLabel(ctx, 'x', width - 20, originY - 8);
 
-            // Dashed Yellow Light Cones (x = ct and x = -ct)
+            // Dashed Yellow Light Cones
             ctx.strokeStyle = '#eab308';
             ctx.lineWidth = 2;
             ctx.setLineDash([6, 6]);
@@ -240,7 +239,7 @@
             ctx.stroke();
             ctx.setLineDash([]);
 
-            // Event Horizon: x = ct - rho (dashed magenta)
+            // Event Horizon: x = ct - rho
             ctx.strokeStyle = '#ec4899';
             ctx.lineWidth = 2;
             ctx.setLineDash([4, 4]);
@@ -255,7 +254,7 @@
             ctx.stroke();
             ctx.setLineDash([]);
 
-            // Extended Rindler Hyperbolic Acceleration Path: x = sqrt(rho^2 + (ct)^2)
+            // Rindler Hyperbola
             ctx.strokeStyle = '#ec4899';
             ctx.lineWidth = 2.5;
             ctx.beginPath();
@@ -269,7 +268,7 @@
             }
             ctx.stroke();
 
-            // Current Position Dot on Hyperbola at coordinate time t
+            // Particle Position Dot
             const currentCt = t;
             const currentX = Math.sqrt(rho * rho + currentCt * currentCt);
             const dotPx = originX + currentX * scale;
@@ -283,7 +282,7 @@
             ctx.lineWidth = 1.5;
             ctx.stroke();
 
-            // Legend at Bottom-Left to avoid obscuring trajectory/dot
+            // Legend at Bottom-Left
             ctx.fillStyle = 'rgba(15, 23, 42, 0.85)';
             ctx.fillRect(10, height - 90, 195, 80);
             ctx.strokeStyle = '#334155';
@@ -302,4 +301,81 @@
 
             drawGrid(ctx, width, height, scale, originX, originY);
 
-            const gamma = 1
+            const gamma = 1.0 / Math.sqrt(Math.max(0.001, 1 - beta * beta));
+            const angle = Math.atan(beta);
+
+            ctx.lineWidth = 2;
+            
+            // ct' axis
+            ctx.strokeStyle = '#06b6d4';
+            ctx.beginPath();
+            ctx.moveTo(originX - Math.sin(angle) * width, originY + Math.cos(angle) * height);
+            ctx.lineTo(originX + Math.sin(angle) * width, originY - Math.cos(angle) * height);
+            ctx.stroke();
+
+            // x' axis
+            ctx.strokeStyle = '#8b5cf6';
+            ctx.beginPath();
+            ctx.moveTo(originX - Math.cos(angle) * width, originY + Math.sin(angle) * height);
+            ctx.lineTo(originX + Math.cos(angle) * width, originY - Math.sin(angle) * height);
+            ctx.stroke();
+
+            drawAxisLabel(ctx, "ct'", originX + Math.sin(angle) * (originY - 20) + 6, originY - Math.cos(angle) * (originY - 20), '#06b6d4');
+            drawAxisLabel(ctx, "x'", width - 35, originY - Math.sin(angle) * (originX - 20) - 6, '#8b5cf6');
+
+            // Dashed Yellow Light Cones
+            ctx.strokeStyle = '#eab308';
+            ctx.lineWidth = 2;
+            ctx.setLineDash([6, 6]);
+            ctx.beginPath();
+            ctx.moveTo(originX - originX, originY - originX);
+            ctx.lineTo(originX + originX, originY + originX);
+            ctx.moveTo(originX - originX, originY + originX);
+            ctx.lineTo(originX + originX, originY - originX);
+            ctx.stroke();
+            ctx.setLineDash([]);
+
+            // Boosted Hyperbola
+            ctx.strokeStyle = '#ec4899';
+            ctx.lineWidth = 2.5;
+            ctx.beginPath();
+            let first = true;
+            for (let tau = -4; tau <= 4; tau += 0.05) {
+                const X_r = rho * Math.cosh(g * tau);
+                const T_r = rho * Math.sinh(g * tau);
+                
+                const lab_t = T_r;
+                const lab_x = X_r;
+                const boosted_t = gamma * (lab_t - beta * lab_x);
+                const boosted_x = gamma * (lab_x - beta * lab_t);
+
+                const px = originX + boosted_x * scale;
+                const py = originY - boosted_t * scale;
+
+                if (px >= 0 && px <= width && py >= 0 && py <= height) {
+                    if (first) { ctx.moveTo(px, py); first = false; }
+                    else { ctx.lineTo(px, py); }
+                } else {
+                    first = true;
+                }
+            }
+            ctx.stroke();
+
+            // Legend at Bottom-Left
+            ctx.fillStyle = 'rgba(15, 23, 42, 0.85)';
+            ctx.fillRect(10, height - 70, 180, 60);
+            ctx.strokeStyle = '#334155';
+            ctx.strokeRect(10, height - 70, 180, 60);
+
+            drawAxisLabel(ctx, '— Boosted ct\' Axis', 20, height - 48, '#06b6d4');
+            drawAxisLabel(ctx, '— Boosted x\' Axis', 20, height - 28, '#8b5cf6');
+        }
+
+        [betaRange, gRange, tRange].forEach(input => {
+            input.addEventListener('input', draw);
+        });
+
+        resizeCanvases();
+    </script>
+</body>
+</html>
