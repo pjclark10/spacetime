@@ -101,13 +101,11 @@
             <div><span class="text-slate-400">U·A:</span> <span id="badge-dot" class="text-emerald-400 font-bold">0.0000</span></div>
         </div>
     </header>
-
-    <!-- Natural document flow container (no fixed positioning or nested scroll locks) -->
-    <main class="w-full max-w-7xl mx-auto flex flex-col md:grid md:grid-cols-2 gap-4 p-3 md:p-6 pb-8">
+<!-- Main container with extra bottom padding so content isn't hidden behind the floating HUD -->
+    <main class="w-full max-w-7xl mx-auto flex flex-col md:grid md:grid-cols-2 gap-4 p-3 md:p-6 pb-36 md:pb-24">
         
         <!-- Laboratory Frame (S) Viewport -->
         <div class="relative bg-slate-900 rounded-2xl border border-slate-800 overflow-hidden flex flex-col shadow-2xl h-[400px] sm:h-[480px]">
-            <!-- Canvas Header Bar -->
             <div class="absolute top-2 left-2 right-2 z-10 flex items-center justify-between pointer-events-none">
                 <div class="bg-slate-900/85 backdrop-blur-md px-3 py-1.5 rounded-xl border border-slate-800 text-xs font-medium flex items-center space-x-2 pointer-events-auto shadow-lg">
                     <span class="w-2.5 h-2.5 rounded-full bg-lightConeColor-500 shadow-sm shadow-yellow-500"></span>
@@ -117,13 +115,9 @@
                     Cartesian $(ct, x)$
                 </div>
             </div>
-
-            <!-- Canvas Element -->
             <div class="flex-1 w-full h-full relative">
                 <canvas id="minkowskiCanvas1" class="w-full h-full block"></canvas>
             </div>
-
-            <!-- Event Horizon Legend Overlay -->
             <div class="absolute bottom-2 left-2 right-2 z-10 flex items-center justify-between pointer-events-none">
                 <div class="bg-slate-900/85 backdrop-blur-md px-2.5 py-1 rounded-lg border border-slate-800 text-[10px] font-mono text-slate-300 flex items-center space-x-1.5 pointer-events-auto">
                     <span class="w-2 h-2 rounded-full bg-horizonColor-500 shrink-0"></span>
@@ -134,7 +128,6 @@
 
         <!-- Boosted Frame (S') Viewport -->
         <div class="relative bg-slate-900 rounded-2xl border border-slate-800 overflow-hidden flex flex-col shadow-2xl h-[400px] sm:h-[480px]">
-            <!-- Canvas Header Bar -->
             <div class="absolute top-2 left-2 right-2 z-10 flex items-center justify-between pointer-events-none">
                 <div class="bg-slate-900/85 backdrop-blur-md px-3 py-1.5 rounded-xl border border-slate-800 text-xs font-medium flex items-center space-x-2 pointer-events-auto shadow-lg">
                     <span class="w-2.5 h-2.5 rounded-full bg-spaceAxisColor-500 shadow-sm shadow-violet-500"></span>
@@ -144,13 +137,9 @@
                     Skewed $(ct', x')$
                 </div>
             </div>
-
-            <!-- Canvas Element -->
             <div class="flex-1 w-full h-full relative">
                 <canvas id="minkowskiCanvas2" class="w-full h-full block"></canvas>
             </div>
-
-            <!-- Color Coding Legend Overlay -->
             <div class="absolute bottom-2 left-2 right-2 z-10 flex items-center justify-between pointer-events-none">
                 <div class="bg-slate-900/85 backdrop-blur-md px-2.5 py-1 rounded-lg border border-slate-800 text-[10px] font-mono text-slate-300 flex items-center space-x-2 pointer-events-auto">
                     <span class="flex items-center space-x-1"><span class="w-2 h-2 rounded-full bg-velocityColor-400"></span><span class="text-velocityColor-400 font-semibold">ct'</span></span>
@@ -160,40 +149,43 @@
             </div>
         </div>
 
-        <!-- Controls Panel (In document flow, no longer fixed overlay) -->
-        <div class="md:col-span-2 bg-slate-900/90 backdrop-blur-md border border-slate-800 rounded-2xl p-4 shadow-2xl my-2">
-            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                <!-- Velocity Slider -->
-                <div class="space-y-1 bg-slate-950/60 p-3 rounded-xl border border-slate-800/80">
-                    <div class="flex items-center justify-between text-xs">
-                        <label for="beta-slider" class="text-slate-300 font-medium">Velocity ($\beta$)</label>
-                        <span id="beta-val" class="font-mono text-velocityColor-400 font-bold">0.60</span>
-                    </div>
-                    <input id="beta-slider" type="range" min="-0.99" max="0.99" step="0.01" value="0.60" oninput="updateSimulation()"
-                           class="w-full accent-cyan-500 bg-slate-800 h-1.5 rounded-lg cursor-pointer">
+    <!-- Floating Glassmorphism Controls Panel -->
+    <div class="fixed bottom-4 left-1/2 -translate-x-1/2 z-30 w-[94%] max-w-2xl bg-slate-900/90 backdrop-blur-md border border-slate-800 rounded-2xl p-3 sm:p-4 shadow-2xl">
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <!-- Velocity Slider -->
+            <div class="space-y-1 bg-slate-950/60 p-2 rounded-xl border border-slate-800/80">
+                <div class="flex items-center justify-between text-xs">
+                    <label for="beta-slider" class="text-slate-300 font-medium">Velocity ($\beta$)</label>
+                    <span id="beta-val" class="font-mono text-velocityColor-400 font-bold">0.60</span>
                 </div>
+                <input id="beta-slider" type="range" min="-0.99" max="0.99" step="0.01" value="0.60" oninput="updateSimulation()"
+                       class="w-full accent-cyan-500 bg-slate-800 h-1.5 rounded-lg cursor-pointer">
+            </div>
 
-                <!-- Proper Acceleration Slider -->
-                <div class="space-y-1 bg-slate-950/60 p-3 rounded-xl border border-slate-800/80">
-                    <div class="flex items-center justify-between text-xs">
-                        <label for="accel-slider" class="text-slate-300 font-medium">Proper Accel ($g$)</label>
-                        <span id="accel-val" class="font-mono text-accelColor-400 font-bold">1.00</span>
-                    </div>
-                    <input id="accel-slider" type="range" min="0.1" max="3.0" step="0.05" value="1.0" oninput="updateSimulation()"
-                           class="w-full accent-orange-500 bg-slate-800 h-1.5 rounded-lg cursor-pointer">
+            <!-- Proper Acceleration Slider -->
+            <div class="space-y-1 bg-slate-950/60 p-2 rounded-xl border border-slate-800/80">
+                <div class="flex items-center justify-between text-xs">
+                    <label for="accel-slider" class="text-slate-300 font-medium">Proper Accel ($g$)</label>
+                    <span id="accel-val" class="font-mono text-accelColor-400 font-bold">1.00</span>
                 </div>
+                <input id="accel-slider" type="range" min="0.1" max="3.0" step="0.05" value="1.0" oninput="updateSimulation()"
+                       class="w-full accent-orange-500 bg-slate-800 h-1.5 rounded-lg cursor-pointer">
+            </div>
 
-                <!-- Time Parameter Slider -->
-                <div class="space-y-1 bg-slate-950/60 p-3 rounded-xl border border-slate-800/80">
-                    <div class="flex items-center justify-between text-xs">
-                        <label for="time-slider" class="text-slate-300 font-medium">Time ($t$)</label>
-                        <span id="time-val" class="font-mono text-purple-400 font-bold">1.50</span>
-                    </div>
-                    <input id="time-slider" type="range" min="-5.0" max="5.0" step="0.1" value="1.5" oninput="updateSimulation()"
-                           class="w-full accent-purple-500 bg-slate-800 h-1.5 rounded-lg cursor-pointer">
+            <!-- Time Parameter Slider -->
+            <div class="space-y-1 bg-slate-950/60 p-2 rounded-xl border border-slate-800/80">
+                <div class="flex items-center justify-between text-xs">
+                    <label for="time-slider" class="text-slate-300 font-medium">Time ($t$)</label>
+                    <span id="time-val" class="font-mono text-purple-400 font-bold">1.50</span>
                 </div>
+                <input id="time-slider" type="range" min="-5.0" max="5.0" step="0.1" value="1.5" oninput="updateSimulation()"
+                       class="w-full accent-purple-500 bg-slate-800 h-1.5 rounded-lg cursor-pointer">
             </div>
         </div>
+    </div>
+
+
+        
 
     </main>
 
