@@ -60,11 +60,14 @@
         html, body { 
             font-family: 'Inter', sans-serif; 
             -webkit-tap-highlight-color: transparent;
-            height: 100%;
-            margin: 0;
-            padding: 0;
             background-color: #020617;
             color: #f8fafc;
+            min-height: 100vh;
+            overflow-x: hidden;
+            overflow-y: auto; /* Enables native natural body scrolling for Android / Chrome / PWA */
+            touch-action: pan-y;
+            margin: 0;
+            padding: 0;
         }
         .font-mono { font-family: 'JetBrains Mono', monospace; }
         ::-webkit-scrollbar { width: 4px; height: 4px; }
@@ -97,11 +100,11 @@
         </div>
     </header>
 
-    <!-- Main scrollable container using clean flex column for mobile Chrome / PWA compatibility -->
-    <main class="flex-1 flex flex-col md:grid md:grid-cols-2 gap-3 p-3 relative overflow-y-auto overscroll-y-auto touch-pan-y pb-40 md:pb-4">
+    <!-- Natural document flow container (no fixed positioning or nested scroll locks) -->
+    <main class="w-full max-w-7xl mx-auto flex flex-col md:grid md:grid-cols-2 gap-4 p-3 md:p-6 pb-8">
         
         <!-- Laboratory Frame (S) Viewport -->
-        <div class="relative bg-slate-900 rounded-2xl border border-slate-800 overflow-hidden flex flex-col shadow-2xl h-[420px] md:h-[calc(100vh-8rem)] shrink-0">
+        <div class="relative bg-slate-900 rounded-2xl border border-slate-800 overflow-hidden flex flex-col shadow-2xl h-[400px] sm:h-[480px]">
             <!-- Canvas Header Bar -->
             <div class="absolute top-2 left-2 right-2 z-10 flex items-center justify-between pointer-events-none">
                 <div class="bg-slate-900/85 backdrop-blur-md px-3 py-1.5 rounded-xl border border-slate-800 text-xs font-medium flex items-center space-x-2 pointer-events-auto shadow-lg">
@@ -128,7 +131,7 @@
         </div>
 
         <!-- Boosted Frame (S') Viewport -->
-        <div class="relative bg-slate-900 rounded-2xl border border-slate-800 overflow-hidden flex flex-col shadow-2xl h-[420px] md:h-[calc(100vh-8rem)] shrink-0">
+        <div class="relative bg-slate-900 rounded-2xl border border-slate-800 overflow-hidden flex flex-col shadow-2xl h-[400px] sm:h-[480px]">
             <!-- Canvas Header Bar -->
             <div class="absolute top-2 left-2 right-2 z-10 flex items-center justify-between pointer-events-none">
                 <div class="bg-slate-900/85 backdrop-blur-md px-3 py-1.5 rounded-xl border border-slate-800 text-xs font-medium flex items-center space-x-2 pointer-events-auto shadow-lg">
@@ -155,11 +158,11 @@
             </div>
         </div>
 
-        <!-- Controls Floating Panel -->
-        <div class="fixed bottom-4 left-1/2 -translate-x-1/2 z-30 w-[94%] max-w-2xl bg-slate-900/90 backdrop-blur-md border border-slate-800 rounded-2xl p-3 sm:p-4 shadow-2xl">
-            <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+        <!-- Controls Panel (In document flow, no longer fixed overlay) -->
+        <div class="md:col-span-2 bg-slate-900/90 backdrop-blur-md border border-slate-800 rounded-2xl p-4 shadow-2xl my-2">
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 <!-- Velocity Slider -->
-                <div class="space-y-1 bg-slate-950/60 p-2 rounded-xl border border-slate-800/80">
+                <div class="space-y-1 bg-slate-950/60 p-3 rounded-xl border border-slate-800/80">
                     <div class="flex items-center justify-between text-xs">
                         <label for="beta-slider" class="text-slate-300 font-medium">Velocity ($\beta$)</label>
                         <span id="beta-val" class="font-mono text-velocityColor-400 font-bold">0.60</span>
@@ -169,7 +172,7 @@
                 </div>
 
                 <!-- Proper Acceleration Slider -->
-                <div class="space-y-1 bg-slate-950/60 p-2 rounded-xl border border-slate-800/80">
+                <div class="space-y-1 bg-slate-950/60 p-3 rounded-xl border border-slate-800/80">
                     <div class="flex items-center justify-between text-xs">
                         <label for="accel-slider" class="text-slate-300 font-medium">Proper Accel ($g$)</label>
                         <span id="accel-val" class="font-mono text-accelColor-400 font-bold">1.00</span>
@@ -179,7 +182,7 @@
                 </div>
 
                 <!-- Time Parameter Slider -->
-                <div class="space-y-1 bg-slate-950/60 p-2 rounded-xl border border-slate-800/80">
+                <div class="space-y-1 bg-slate-950/60 p-3 rounded-xl border border-slate-800/80">
                     <div class="flex items-center justify-between text-xs">
                         <label for="time-slider" class="text-slate-300 font-medium">Time ($t$)</label>
                         <span id="time-val" class="font-mono text-purple-400 font-bold">1.50</span>
