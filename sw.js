@@ -1,15 +1,15 @@
-const CACHE_NAME = 'spacetime-v2'; // Bump this version number
+const CACHE_NAME = 'spacetime-v2';
 const urlsToCache = [
   './',
   './index.html',
-  // other assets...
+  './manifest.json'
 ];
 
 self.addEventListener('install', (event) => {
   event.waitUntil(
     caches.open(CACHE_NAME)
       .then((cache) => cache.addAll(urlsToCache))
-      .then(() => self.skipWaiting()) // Forces the new service worker to activate immediately
+      .then(() => self.skipWaiting())
   );
 });
 
@@ -19,10 +19,18 @@ self.addEventListener('activate', (event) => {
       return Promise.all(
         cacheNames.map((cacheName) => {
           if (cacheName !== CACHE_NAME) {
-            return caches.delete(cacheName); // Deletes the old cache containing the broken file
+            return caches.delete(cacheName);
           }
         })
       );
     }).then(() => self.clients.claim())
+  );
+});
+
+// CRITICAL: Chrome requires a fetch handler for PWA installability
+self.addEventListener('fetch', (event) => {
+  event.respondWith(
+    caches.match(event.request)
+      .then((response) => response || fetch(event.request))
   );
 });
