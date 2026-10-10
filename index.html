@@ -57,16 +57,22 @@
     <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js" async></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
     <style>
-        body { font-family: 'Inter', sans-serif; -webkit-tap-highlight-color: transparent; }
+        html, body { 
+            font-family: 'Inter', sans-serif; 
+            -webkit-tap-highlight-color: transparent;
+            overflow-x: hidden;
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
+        }
         .font-mono { font-family: 'JetBrains Mono', monospace; }
         ::-webkit-scrollbar { width: 4px; height: 4px; }
         ::-webkit-scrollbar-track { background: #0f172a; }
         ::-webkit-scrollbar-thumb { background: #334155; border-radius: 2px; }
         input[type="range"] { touch-action: pan-x; }
-        canvas { touch-action: pan-y; } /* Allows smooth vertical scrolling over canvases on mobile */
+        canvas, .viewport-container { touch-action: pan-y; } /* Ensures Chrome allows vertical scrolling over viewports */
     </style>
 </head>
-<body class="bg-slate-950 text-slate-100 min-h-[100dvh] w-screen overflow-y-auto flex flex-col antialiased selection:bg-cyan-500 selection:text-white">
+<body class="bg-slate-950 text-slate-100 min-h-screen w-full flex flex-col antialiased selection:bg-cyan-500 selection:text-white">
 
     <header class="bg-slate-900/90 backdrop-blur-md border-b border-slate-800 shrink-0 h-14 flex items-center justify-between px-4 z-40 sticky top-0">
         <div class="flex items-center space-x-3">
@@ -89,10 +95,10 @@
         </div>
     </header>
 
-    <main class="flex-1 grid grid-cols-1 md:grid-cols-2 gap-3 p-3 relative pb-32 md:pb-4">
+    <main class="flex-1 grid grid-cols-1 md:grid-cols-2 gap-3 p-3 relative pb-36 md:pb-4">
         
         <!-- Laboratory Frame (S) Viewport -->
-        <div class="relative bg-slate-900 rounded-2xl border border-slate-800 overflow-hidden flex flex-col shadow-2xl h-80 md:h-[calc(100vh-8rem)]">
+        <div class="viewport-container relative bg-slate-900 rounded-2xl border border-slate-800 overflow-hidden flex flex-col shadow-2xl h-[420px] md:h-[calc(100vh-8rem)]">
             <!-- Canvas Header Bar -->
             <div class="absolute top-2 left-2 right-2 z-10 flex items-center justify-between pointer-events-none">
                 <div class="bg-slate-900/85 backdrop-blur-md px-3 py-1.5 rounded-xl border border-slate-800 text-xs font-medium flex items-center space-x-2 pointer-events-auto shadow-lg">
@@ -118,8 +124,8 @@
             </div>
         </div>
 
-        <!-- Boosted Frame (S') Viewport -->
-        <div class="relative bg-slate-900 rounded-2xl border border-slate-800 overflow-hidden flex flex-col shadow-2xl h-80 md:h-[calc(100vh-8rem)]">
+        <!-- Boosted Frame (S') Viewport with Floating Glassmorphism HUD -->
+        <div class="viewport-container relative bg-slate-900 rounded-2xl border border-slate-800 overflow-hidden flex flex-col shadow-2xl h-[420px] md:h-[calc(100vh-8rem)]">
             <!-- Canvas Header Bar -->
             <div class="absolute top-2 left-2 right-2 z-10 flex items-center justify-between pointer-events-none">
                 <div class="bg-slate-900/85 backdrop-blur-md px-3 py-1.5 rounded-xl border border-slate-800 text-xs font-medium flex items-center space-x-2 pointer-events-auto shadow-lg">
@@ -237,9 +243,9 @@
             const oy = height / 2;
             const scale = Math.min(width, height) / 12;
 
-            // Cartesian grid
-            ctx.strokeStyle = '#1e293b';
-            ctx.lineWidth = 1;
+            // Cartesian grid (Increased visibility with slate-700 #334155)
+            ctx.strokeStyle = '#334155';
+            ctx.lineWidth = 1.1;
             for (let i = -6; i <= 6; i++) {
                 ctx.beginPath();
                 ctx.moveTo(ox + i * scale, 0);
@@ -405,9 +411,9 @@
 
             const gamma = 1.0 / Math.sqrt(Math.max(0.0001, 1.0 - betaInertial * betaInertial));
 
-            // Boosted Grid lines
-            ctx.strokeStyle = 'rgba(51, 65, 85, 0.35)';
-            ctx.lineWidth = 1;
+            // Boosted Grid lines (Increased visibility with slate-400 equivalent opacity)
+            ctx.strokeStyle = 'rgba(148, 163, 184, 0.45)';
+            ctx.lineWidth = 1.1;
             for (let i = -6; i <= 6; i++) {
                 ctx.beginPath();
                 let first = true;
