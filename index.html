@@ -1,17 +1,10 @@
 <!DOCTYPE html>
 <html lang="en" class="dark">
 <head>
-<!-- PWA & Mobile Web App Meta Tags -->
-<link rel="manifest" href="manifest.json">
-<link rel="icon" type="image/svg+xml" href="icon.svg">
-<link rel="apple-touch-icon" href="icon.svg">
-<meta name="theme-color" content="#090d16">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="Spacetime">
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Minkowski Spacetime Simulator</title>
+    <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {
@@ -19,504 +12,294 @@
             theme: {
                 extend: {
                     colors: {
-                        slate: {
-                            950: '#020617',
-                            900: '#0f172a',
-                            850: '#0b1329',
-                            800: '#1e293b',
-                            700: '#334155'
-                        },
-                        velocityColor: {
-                            500: '#06b6d4',
-                            400: '#22d3ee',
-                        },
-                        accelColor: {
-                            500: '#f97316',
-                            400: '#fb923c',
-                        },
-                        horizonColor: {
-                            500: '#ec4899',
-                            400: '#f472b6',
-                        },
-                        spaceAxisColor: {
-                            500: '#8b5cf6',
-                            400: '#a78bfa',
-                        },
-                        lightConeColor: {
-                            500: '#eab308',
-                            400: '#facc15'
-                        }
+                        darkBg: '#090d16',
+                        cardBg: '#111827',
+                        borderCol: '#1e293b'
                     }
                 }
             }
         }
     </script>
-    <script>
-        window.MathJax = {
-            tex: {
-                inlineMath: [['$', '$'], ['\\(', '\\)']],
-                displayMath: [['$$', '$$'], ['\\[', '\\]']]
-            },
-            startup: {
-                typeset: true
-            }
-        };
-    </script>
-    <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js" async></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+    <!-- MathJax for Beautiful Physics Equations -->
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
     <style>
-        body { font-family: 'Inter', sans-serif; -webkit-tap-highlight-color: transparent; }
-        .font-mono { font-family: 'JetBrains Mono', monospace; }
-        ::-webkit-scrollbar { width: 4px; height: 4px; }
-        ::-webkit-scrollbar-track { background: #0f172a; }
-        ::-webkit-scrollbar-thumb { background: #334155; border-radius: 2px; }
-        input[type="range"] { touch-action: pan-x; }
+        body {
+            background-color: #090d16;
+            color: #f8fafc;
+            font-family: system-ui, -apple-system, sans-serif;
+        }
+        input[type="range"] {
+            accent-color: #38bdf8;
+        }
     </style>
 </head>
-<body class="bg-slate-950 text-slate-100 h-[100dvh] w-screen overflow-hidden flex flex-col antialiased selection:bg-cyan-500 selection:text-white">
-
-    <header class="bg-slate-900/90 backdrop-blur-md border-b border-slate-800 shrink-0 h-14 flex items-center justify-between px-4 z-40">
-        <div class="flex items-center space-x-3">
-            <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-velocityColor-500 to-accelColor-500 flex items-center justify-center shadow-lg shadow-cyan-500/10">
-                <svg class="w-4 h-4 text-slate-950" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
-                </svg>
-            </div>
-            <div>
-                <h1 class="font-bold text-xs sm:text-sm tracking-tight bg-gradient-to-r from-velocityColor-400 via-lightConeColor-400 to-accelColor-400 bg-clip-text text-transparent">Minkowski Spacetime Suite</h1>
-                <p class="text-[9px] text-slate-400">Special Relativity & Rindler Horizons</p>
-            </div>
-        </div>
-
-        <!-- Telemetry Summary Badge -->
-        <div class="hidden sm:flex items-center space-x-3 bg-slate-950/60 px-3 py-1 rounded-lg border border-slate-800 text-[11px] font-mono">
-            <div><span class="text-slate-400">γ:</span> <span id="badge-gamma" class="text-cyan-400 font-bold">1.250</span></div>
-            <span class="text-slate-700">|</span>
-            <div><span class="text-slate-400">U·A:</span> <span id="badge-dot" class="text-emerald-400 font-bold">0.0000</span></div>
-        </div>
-    </header>
-
-    <main class="flex-1 grid grid-cols-1 md:grid-cols-2 gap-2 p-2 overflow-hidden relative">
+<body class="min-h-screen p-4 md:p-8">
+    <div class="max-w-7xl mx-auto space-y-6">
         
-        <!-- Laboratory Frame (S) Viewport -->
-        <div class="relative bg-slate-900 rounded-2xl border border-slate-800 overflow-hidden flex flex-col shadow-2xl">
-            <!-- Canvas Header Bar -->
-            <div class="absolute top-2 left-2 right-2 z-10 flex items-center justify-between pointer-events-none">
-                <div class="bg-slate-900/85 backdrop-blur-md px-3 py-1.5 rounded-xl border border-slate-800 text-xs font-medium flex items-center space-x-2 pointer-events-auto shadow-lg">
-                    <span class="w-2.5 h-2.5 rounded-full bg-lightConeColor-500 shadow-sm shadow-yellow-500"></span>
-                    <span>Laboratory Frame ($S$)</span>
+        <!-- Header -->
+        <header class="text-center space-y-2">
+            <h1 class="text-2xl md:text-3xl font-bold tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 via-sky-300 to-violet-400">
+                Minkowski Spacetime & Relativistic Kinematics
+            </h1>
+            <p class="text-xs md:text-sm text-slate-400 max-w-2xl mx-auto">
+                Interactive dual-frame visualization of Lorentz transformations, four-vectors ($U \cdot A = 0$), Rindler hyperbolic accelerated motion, and Event Horizons.
+            </p>
+        </header>
+
+        <!-- Controls Dashboard -->
+        <div class="bg-cardBg/90 border border-borderCol rounded-2xl p-4 md:p-6 shadow-xl backdrop-blur-md grid grid-cols-1 md:grid-cols-3 gap-6">
+            <!-- Velocity Slider -->
+            <div class="space-y-2">
+                <div class="flex justify-between items-center text-sm">
+                    <span class="font-medium text-slate-300">Velocity (\(\beta = v/c\)):</span>
+                    <span id="betaVal" class="font-mono text-cyan-400 font-semibold">0.60</span>
                 </div>
-                <div class="bg-slate-900/85 backdrop-blur-md px-2.5 py-1.5 rounded-xl border border-slate-800 text-[10px] font-mono text-slate-300 pointer-events-auto hidden sm:block">
-                    Cartesian $(ct, x)$
+                <input id="betaRange" type="range" min="-0.95" max="0.95" step="0.01" value="0.60" class="w-full h-2 bg-slate-800 rounded-lg cursor-pointer">
+            </div>
+
+            <!-- Proper Acceleration Slider -->
+            <div class="space-y-2">
+                <div class="flex justify-between items-center text-sm">
+                    <span class="font-medium text-slate-300">Proper Acceleration (\(g\)):</span>
+                    <span id="gVal" class="font-mono text-pink-400 font-semibold">0.50</span>
+                </div>
+                <input id="gRange" type="range" min="0.1" max="2.0" step="0.05" value="0.50" class="w-full h-2 bg-slate-800 rounded-lg cursor-pointer">
+            </div>
+
+            <!-- Coordinate Time Slider -->
+            <div class="space-y-2">
+                <div class="flex justify-between items-center text-sm">
+                    <span class="font-medium text-slate-300">Coordinate Time (\(ct\)):</span>
+                    <span id="tVal" class="font-mono text-amber-400 font-semibold">0.00</span>
+                </div>
+                <input id="tRange" type="range" min="-5.0" max="5.0" step="0.05" value="0.00" class="w-full h-2 bg-slate-800 rounded-lg cursor-pointer">
+            </div>
+        </div>
+
+        <!-- Dual Canvas Viewports (Side by Side on desktop, stacked on mobile) -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            
+            <!-- Laboratory Frame S -->
+            <div class="bg-cardBg/90 border border-borderCol rounded-2xl p-4 shadow-xl flex flex-col items-center">
+                <h2 class="text-sm font-semibold text-slate-300 mb-2">Laboratory Frame \(S\)</h2>
+                <div class="relative w-full aspect-square max-w-[500px] bg-slate-950 rounded-xl overflow-hidden border border-slate-800">
+                    <canvas id="labCanvas" class="w-full h-full"></canvas>
                 </div>
             </div>
 
-            <!-- Canvas Element -->
-            <div class="flex-1 w-full h-full relative">
-                <canvas id="minkowskiCanvas1" class="w-full h-full block cursor-crosshair"></canvas>
+            <!-- Boosted Frame S' -->
+            <div class="bg-cardBg/90 border border-borderCol rounded-2xl p-4 shadow-xl flex flex-col items-center">
+                <h2 class="text-sm font-semibold text-slate-300 mb-2">Boosted Frame \(S'\) (\(\beta = \text{v/c}\))</h2>
+                <div class="relative w-full aspect-square max-w-[500px] bg-slate-950 rounded-xl overflow-hidden border border-slate-800">
+                    <canvas id="boostedCanvas" class="w-full h-full"></canvas>
+                </div>
             </div>
 
-            <!-- Event Horizon Legend Overlay -->
-            <div class="absolute bottom-2 left-2 right-2 z-10 flex items-center justify-between pointer-events-none">
-                <div class="bg-slate-900/85 backdrop-blur-md px-2.5 py-1 rounded-lg border border-slate-800 text-[10px] font-mono text-slate-300 flex items-center space-x-1.5 pointer-events-auto">
-                    <span class="w-2 h-2 rounded-full bg-horizonColor-500 shrink-0"></span>
-                    <span>Event horizon: $x = ct - \rho$ ($\rho = 1/g$)</span>
+        </div>
+
+        <!-- Telemetry Panel -->
+        <div class="bg-cardBg/90 border border-borderCol rounded-2xl p-6 shadow-xl space-y-4">
+            <h3 class="text-sm font-bold tracking-wide text-slate-300 uppercase">Relativistic Kinematics & Four-Vector Telemetry</h3>
+            <div class="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-4 gap-4 font-mono text-xs md:text-sm">
+                <div class="bg-slate-900/80 p-3 rounded-xl border border-slate-800">
+                    <div class="text-slate-400 text-xs mb-1">Lorentz Factor (\(\gamma\))</div>
+                    <div id="gammaDisplay" class="text-cyan-400 font-bold text-base">1.25</div>
+                </div>
+                <div class="bg-slate-900/80 p-3 rounded-xl border border-slate-800">
+                    <div class="text-slate-400 text-xs mb-1">Four-Velocity (\(U^\mu\))</div>
+                    <div id="uDisplay" class="text-sky-300 font-bold text-xs">[1.25, 0.75, 0, 0]</div>
+                </div>
+                <div class="bg-slate-900/80 p-3 rounded-xl border border-slate-800">
+                    <div class="text-slate-400 text-xs mb-1">Four-Acceleration (\(A^\mu\))</div>
+                    <div id="aDisplay" class="text-pink-400 font-bold text-xs">[0.73, 1.22, 0, 0]</div>
+                </div>
+                <div class="bg-slate-900/80 p-3 rounded-xl border border-slate-800">
+                    <div class="text-slate-400 text-xs mb-1">Orthogonality (\(U \cdot A\))</div>
+                    <div id="orthoDisplay" class="text-emerald-400 font-bold text-base">0.0000</div>
                 </div>
             </div>
         </div>
 
-        <!-- Boosted Frame (S') Viewport with Floating Glassmorphism HUD -->
-        <div class="relative bg-slate-900 rounded-2xl border border-slate-800 overflow-hidden flex flex-col shadow-2xl">
-            <!-- Canvas Header Bar -->
-            <div class="absolute top-2 left-2 right-2 z-10 flex items-center justify-between pointer-events-none">
-                <div class="bg-slate-900/85 backdrop-blur-md px-3 py-1.5 rounded-xl border border-slate-800 text-xs font-medium flex items-center space-x-2 pointer-events-auto shadow-lg">
-                    <span class="w-2.5 h-2.5 rounded-full bg-spaceAxisColor-500 shadow-sm shadow-violet-500"></span>
-                    <span>Boosted Frame ($S'$)</span>
-                </div>
-                <div class="bg-slate-900/85 backdrop-blur-md px-2.5 py-1.5 rounded-xl border border-slate-800 text-[10px] font-mono text-slate-300 pointer-events-auto hidden sm:block">
-                    Skewed $(ct', x')$
-                </div>
-            </div>
+    </div>
 
-            <!-- Canvas Element -->
-            <div class="flex-1 w-full h-full relative">
-                <canvas id="minkowskiCanvas2" class="w-full h-full block cursor-crosshair"></canvas>
-            </div>
-
-            <!-- Color Coding Legend Overlay -->
-            <div class="absolute bottom-2 left-2 right-2 z-10 flex items-center justify-between pointer-events-none">
-                <div class="bg-slate-900/85 backdrop-blur-md px-2.5 py-1 rounded-lg border border-slate-800 text-[10px] font-mono text-slate-300 flex items-center space-x-2 pointer-events-auto">
-                    <span class="flex items-center space-x-1"><span class="w-2 h-2 rounded-full bg-velocityColor-400"></span><span class="text-velocityColor-400 font-semibold">ct'</span></span>
-                    <span class="text-slate-600">|</span>
-                    <span class="flex items-center space-x-1"><span class="w-2 h-2 rounded-full bg-spaceAxisColor-400"></span><span class="text-spaceAxisColor-400 font-semibold">x'</span></span>
-                </div>
-            </div>
-        </div>
-
-        <div class="absolute bottom-4 left-1/2 -translate-x-1/2 z-30 w-[94%] max-w-2xl bg-slate-900/90 backdrop-blur-md border border-slate-800 rounded-2xl p-3 sm:p-4 shadow-2xl">
-            <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                <!-- Velocity Slider -->
-                <div class="space-y-1 bg-slate-950/60 p-2 rounded-xl border border-slate-800/80">
-                    <div class="flex items-center justify-between text-xs">
-                        <label for="beta-slider" class="text-slate-300 font-medium">Velocity ($\beta$)</label>
-                        <span id="beta-val" class="font-mono text-velocityColor-400 font-bold">0.60</span>
-                    </div>
-                    <input id="beta-slider" type="range" min="-0.99" max="0.99" step="0.01" value="0.60" oninput="updateSimulation()"
-                           class="w-full accent-cyan-500 bg-slate-800 h-1.5 rounded-lg cursor-pointer">
-                </div>
-
-                <!-- Proper Acceleration Slider -->
-                <div class="space-y-1 bg-slate-950/60 p-2 rounded-xl border border-slate-800/80">
-                    <div class="flex items-center justify-between text-xs">
-                        <label for="accel-slider" class="text-slate-300 font-medium">Proper Accel ($g$)</label>
-                        <span id="accel-val" class="font-mono text-accelColor-400 font-bold">1.00</span>
-                    </div>
-                    <input id="accel-slider" type="range" min="0.1" max="3.0" step="0.05" value="1.0" oninput="updateSimulation()"
-                           class="w-full accent-orange-500 bg-slate-800 h-1.5 rounded-lg cursor-pointer">
-                </div>
-
-                <!-- Time Parameter Slider -->
-                <div class="space-y-1 bg-slate-950/60 p-2 rounded-xl border border-slate-800/80">
-                    <div class="flex items-center justify-between text-xs">
-                        <label for="time-slider" class="text-slate-300 font-medium">Time ($t$)</label>
-                        <span id="time-val" class="font-mono text-purple-400 font-bold">1.50</span>
-                    </div>
-                    <input id="time-slider" type="range" min="-5.0" max="5.0" step="0.1" value="1.5" oninput="updateSimulation()"
-                           class="w-full accent-purple-500 bg-slate-800 h-1.5 rounded-lg cursor-pointer">
-                </div>
-            </div>
-        </div>
-
-    </main>
-
+    <!-- Simulator Script -->
     <script>
-        let betaInertial = 0.6;
-        let accel = 1.0;
-        let timeParam = 1.5;
+        const labCanvas = document.getElementById('labCanvas');
+        const boostedCanvas = document.getElementById('boostedCanvas');
+        const labCtx = labCanvas.getContext('2d');
+        const boostedCtx = boostedCanvas.getContext('2d');
 
-        function updateSimulation() {
-            betaInertial = parseFloat(document.getElementById('beta-slider').value);
-            accel = parseFloat(document.getElementById('accel-slider').value);
-            timeParam = parseFloat(document.getElementById('time-slider').value);
+        const betaRange = document.getElementById('betaRange');
+        const gRange = document.getElementById('gRange');
+        const tRange = document.getElementById('tRange');
 
-            document.getElementById('beta-val').innerText = betaInertial.toFixed(2);
-            document.getElementById('accel-val').innerText = accel.toFixed(2);
-            document.getElementById('time-val').innerText = timeParam.toFixed(2);
+        const betaVal = document.getElementById('betaVal');
+        const gVal = document.getElementById('gVal');
+        const tVal = document.getElementById('tVal');
 
-            const gamma = 1.0 / Math.sqrt(Math.max(0.0001, 1.0 - betaInertial * betaInertial));
-            const u0 = gamma;
-            const u1 = gamma * betaInertial;
+        const gammaDisplay = document.getElementById('gammaDisplay');
+        const uDisplay = document.getElementById('uDisplay');
+        const aDisplay = document.getElementById('aDisplay');
+        const orthoDisplay = document.getElementById('orthoDisplay');
 
-            const a0 = accel > 0 ? accel * gamma * gamma * betaInertial : 0;
-            const a1 = accel > 0 ? accel * gamma * gamma : 0;
-            const dotProduct = -u0 * a0 + u1 * a1;
-
-            document.getElementById('badge-gamma').innerText = gamma.toFixed(3);
-            document.getElementById('badge-dot').innerText = dotProduct.toFixed(4);
-
-            renderCanvases();
+        function resizeCanvases() {
+            [labCanvas, boostedCanvas].forEach(canvas => {
+                const rect = canvas.getBoundingClientRect();
+                canvas.width = rect.width * window.devicePixelRatio;
+                canvas.height = rect.height * window.devicePixelRatio;
+            });
+            draw();
         }
 
-        function setupCanvas(canvasId) {
-            const canvas = document.getElementById(canvasId);
-            const ctx = canvas.getContext('2d');
-            const dpr = window.devicePixelRatio || 1;
-            const rect = canvas.getBoundingClientRect();
-            
-            canvas.width = rect.width * dpr;
-            canvas.height = rect.height * dpr;
-            ctx.scale(dpr, dpr);
-            
-            return { ctx, width: rect.width, height: rect.height };
-        }
+        window.addEventListener('resize', resizeCanvases);
 
-        function renderCanvases() {
-            renderCanvas1();
-            renderCanvas2();
-        }
-
-        function renderCanvas1() {
-            const { ctx, width, height } = setupCanvas('minkowskiCanvas1');
-            ctx.clearRect(0, 0, width, height);
-
-            const ox = width / 2;
-            const oy = height / 2;
-            const scale = Math.min(width, height) / 12;
-
-            // Cartesian grid
+        function drawGrid(ctx, width, height, scale, originX, originY) {
             ctx.strokeStyle = '#1e293b';
             ctx.lineWidth = 1;
-            for (let i = -6; i <= 6; i++) {
+            
+            // Minor grid lines
+            for (let x = originX % (scale * 0.5); x < width; x += scale * 0.5) {
                 ctx.beginPath();
-                ctx.moveTo(ox + i * scale, 0);
-                ctx.lineTo(ox + i * scale, height);
-                ctx.stroke();
-                ctx.beginPath();
-                ctx.moveTo(0, oy - i * scale);
-                ctx.lineTo(width, oy - i * scale);
+                ctx.moveTo(x, 0);
+                ctx.lineTo(x, height);
                 ctx.stroke();
             }
+            for (let y = originY % (scale * 0.5); y < height; y += scale * 0.5) {
+                ctx.beginPath();
+                ctx.moveTo(0, y);
+                ctx.lineTo(width, y);
+                ctx.stroke();
+            }
+        }
 
-            // Dashed Yellow Light Cones
-            ctx.strokeStyle = '#eab308';
-            ctx.lineWidth = 2.5;
-            ctx.setLineDash([6, 4]);
-            ctx.beginPath();
-            ctx.moveTo(ox - scale * 6, oy + scale * 6);
-            ctx.lineTo(ox + scale * 6, oy - scale * 6);
-            ctx.moveTo(ox - scale * 6, oy - scale * 6);
-            ctx.lineTo(ox + scale * 6, oy + scale * 6);
-            ctx.stroke();
-            ctx.setLineDash([]);
+        function drawAxisLabel(ctx, text, x, y, color = '#94a3b8') {
+            ctx.fillStyle = color;
+            ctx.font = '11px system-ui, sans-serif';
+            ctx.fillText(text, x, y);
+        }
 
-            // Neutral Lab Axes (ct, x)
+        function draw() {
+            const beta = parseFloat(betaRange.value);
+            const g = parseFloat(gRange.value);
+            const t = parseFloat(tRange.value);
+
+            betaVal.textContent = beta.toFixed(2);
+            gVal.textContent = g.toFixed(2);
+            tVal.textContent = t.toFixed(2);
+
+            const gamma = 1.0 / Math.sqrt(Math.max(0.001, 1 - beta * beta));
+            const rho = 1.0 / g; // Characteristic length rho = c^2 / g (c=1)
+
+            // Telemetry calculations
+            const U0 = gamma;
+            const U1 = gamma * beta;
+            const A0 = Math.pow(gamma, 4) * beta * g;
+            const A1 = Math.pow(gamma, 4) * g;
+            const dotProduct = -U0 * A0 + U1 * A1; // Minkowski signature (-1, 1)
+
+            gammaDisplay.textContent = gamma.toFixed(3);
+            uDisplay.textContent = `[${U0.toFixed(2)}, ${U1.toFixed(2)}]`;
+            aDisplay.textContent = `[${A0.toFixed(2)}, ${A1.toFixed(2)}]`;
+            orthoDisplay.textContent = dotProduct.toFixed(4);
+
+            // Render Lab Frame S
+            renderLab(labCtx, labCanvas.width, labCanvas.height, beta, g, t, rho);
+            // Render Boosted Frame S'
+            renderBoosted(boostedCtx, boostedCanvas.width, boostedCanvas.height, beta, g, t, rho);
+        }
+
+        function renderLab(ctx, width, height, beta, g, t, rho) {
+            ctx.clearRect(0, 0, width, height);
+            const scale = width / 12; // 6 units in each direction (-6 to 6)
+            const originX = width / 2;
+            const originY = height / 2;
+
+            drawGrid(ctx, width, height, scale, originX, originY);
+
+            // Lab Axes (ct, x)
             ctx.strokeStyle = '#64748b';
             ctx.lineWidth = 1.5;
             ctx.beginPath();
-            ctx.moveTo(ox, height);
-            ctx.lineTo(ox, 0);
+            ctx.moveTo(0, originY); ctx.lineTo(width, originY); // x axis
+            ctx.moveTo(originX, 0); ctx.lineTo(originX, height); // ct axis
             ctx.stroke();
+
+            drawAxisLabel(ctx, 'ct', originX + 8, 16);
+            drawAxisLabel(ctx, 'x', width - 20, originY - 8);
+
+            // Dashed Yellow Light Cones (x = ct and x = -ct)
+            ctx.strokeStyle = '#eab308';
+            ctx.lineWidth = 2;
+            ctx.setLineDash([6, 6]);
             ctx.beginPath();
-            ctx.moveTo(0, oy);
-            ctx.lineTo(width, oy);
+            ctx.moveTo(originX - originX, originY - originX);
+            ctx.lineTo(originX + originX, originY + originX);
+            ctx.moveTo(originX - originX, originY + originX);
+            ctx.lineTo(originX + originX, originY - originX);
             ctx.stroke();
+            ctx.setLineDash([]);
 
-            ctx.fillStyle = '#94a3b8';
-            ctx.font = '11px JetBrains Mono, monospace';
-            ctx.fillText('ct', ox + 8, 20);
-            ctx.fillText('x', width - 20, oy - 8);
-
-            // Dashed Magenta Event Horizon (x = ct - rho, where rho = 1/g)
+            // Event Horizon: x = ct - rho (dashed magenta)
             ctx.strokeStyle = '#ec4899';
             ctx.lineWidth = 2;
-            ctx.setLineDash([5, 5]);
+            ctx.setLineDash([4, 4]);
             ctx.beginPath();
-            const rho = 1.0 / accel;
-            const horizonOffset = scale * rho;
-            ctx.moveTo(0, oy + ox - horizonOffset);
-            ctx.lineTo(width, oy + ox - width - horizonOffset);
+            for (let px = 0; px <= width; px += 5) {
+                const xVal = (px - originX) / scale;
+                const ctVal = xVal + rho;
+                const py = originY - ctVal * scale;
+                if (px === 0) ctx.moveTo(px, py);
+                else ctx.lineTo(px, py);
+            }
             ctx.stroke();
             ctx.setLineDash([]);
 
-            // Uniform Motion Worldline (Cyan)
-            ctx.strokeStyle = '#06b6d4';
-            ctx.lineWidth = 3;
-            ctx.beginPath();
-            let firstBeta = true;
-            for (let t = -6; t <= 6; t += 0.05) {
-                const xInertial = betaInertial * t;
-                const px = ox + xInertial * scale;
-                const py = oy - t * scale;
-                if (firstBeta) { ctx.moveTo(px, py); firstBeta = false; }
-                else { ctx.lineTo(px, py); }
-            }
-            ctx.stroke();
-
-            const currXInertial = betaInertial * timeParam;
-            const currTPx = ox + currXInertial * scale;
-            const currTPy = oy - timeParam * scale;
-
-            ctx.fillStyle = '#22d3ee';
-            ctx.beginPath();
-            ctx.arc(currTPx, currTPy, 5, 0, 2 * Math.PI);
-            ctx.fill();
-
-            // Extended Hyperbolic Proper Acceleration Worldline (Orange)
-            let hypPx = 0, hypPy = 0;
-            if (accel > 0) {
-                ctx.strokeStyle = '#f97316';
-                ctx.lineWidth = 3;
-                ctx.beginPath();
-                let firstHyp = true;
-                for (let t = -7; t <= 7; t += 0.01) {
-                    const sign = t >= 0 ? 1 : -1;
-                    const tAbs = Math.abs(t);
-                    const xHyp = sign * (1.0 / accel) * (Math.sqrt(1.0 + accel * accel * tAbs * tAbs) - 1.0);
-                    const px = ox + xHyp * scale;
-                    const py = oy - t * scale;
-                    if (firstHyp) { ctx.moveTo(px, py); firstHyp = false; }
-                    else { ctx.lineTo(px, py); }
-                }
-                ctx.stroke();
-
-                const signT = timeParam >= 0 ? 1 : -1;
-                const tParamAbs = Math.abs(timeParam);
-                const currXHyp = signT * (1.0 / accel) * (Math.sqrt(1.0 + accel * accel * tParamAbs * tParamAbs) - 1.0);
-                hypPx = ox + currXHyp * scale;
-                hypPy = oy - timeParam * scale;
-
-                ctx.fillStyle = '#fb923c';
-                ctx.beginPath();
-                ctx.arc(hypPx, hypPy, 5, 0, 2 * Math.PI);
-                ctx.fill();
-            }
-
-            // Vertically Offset Non-Colliding Legends
-            ctx.font = '10px JetBrains Mono, monospace';
-            const dist = Math.hypot(currTPx - hypPx, currTPy - hypPy);
-
-            // Uniform Velocity Label
-            ctx.fillStyle = '#0f172a';
-            ctx.fillRect(currTPx + 8, currTPy - 16, 120, 18);
-            ctx.strokeStyle = '#06b6d4';
-            ctx.strokeRect(currTPx + 8, currTPy - 16, 120, 18);
-            ctx.fillStyle = '#22d3ee';
-            ctx.fillText(`Uniform (β=${betaInertial.toFixed(2)})`, currTPx + 12, currTPy - 3);
-
-            // Accelerated Label
-            if (accel > 0) {
-                const yOffset = dist < 45 ? 20 : -16;
-                ctx.fillStyle = '#0f172a';
-                ctx.fillRect(hypPx + 8, hypPy + yOffset, 120, 18);
-                ctx.strokeStyle = '#f97316';
-                ctx.strokeRect(hypPx + 8, hypPy + yOffset, 120, 18);
-                ctx.fillStyle = '#fb923c';
-                ctx.fillText(`Accel (g=${accel.toFixed(2)})`, hypPx + 12, hypPy + yOffset + 13);
-            }
-        }
-
-        function renderCanvas2() {
-            const { ctx, width, height } = setupCanvas('minkowskiCanvas2');
-            ctx.clearRect(0, 0, width, height);
-
-            const ox = width / 2;
-            const oy = height / 2;
-            const scale = Math.min(width, height) / 12;
-
-            // Dashed Yellow Light Cones
-            ctx.strokeStyle = '#eab308';
+            // Extended Rindler Hyperbolic Acceleration Path: x = sqrt(rho^2 + (ct)^2)
+            ctx.strokeStyle = '#ec4899';
             ctx.lineWidth = 2.5;
-            ctx.setLineDash([6, 4]);
             ctx.beginPath();
-            ctx.moveTo(ox - scale * 6, oy + scale * 6);
-            ctx.lineTo(ox + scale * 6, oy - scale * 6);
-            ctx.moveTo(ox - scale * 6, oy - scale * 6);
-            ctx.lineTo(ox + scale * 6, oy + scale * 6);
-            ctx.stroke();
-            ctx.setLineDash([]);
-
-            // Neutral Lab Axes (dashed background reference)
-            ctx.strokeStyle = '#475569';
-            ctx.lineWidth = 1.2;
-            ctx.setLineDash([3, 3]);
-            ctx.beginPath();
-            ctx.moveTo(ox, height);
-            ctx.lineTo(ox, 0);
-            ctx.stroke();
-            ctx.beginPath();
-            ctx.moveTo(0, oy);
-            ctx.lineTo(width, oy);
-            ctx.stroke();
-            ctx.setLineDash([]);
-
-            const gamma = 1.0 / Math.sqrt(Math.max(0.0001, 1.0 - betaInertial * betaInertial));
-
-            // Boosted Grid lines
-            ctx.strokeStyle = 'rgba(51, 65, 85, 0.35)';
-            ctx.lineWidth = 1;
-            for (let i = -6; i <= 6; i++) {
-                ctx.beginPath();
-                let first = true;
-                for (let ctp = -7; ctp <= 7; ctp += 0.2) {
-                    const ct = gamma * (ctp + betaInertial * i);
-                    const x = gamma * (i + betaInertial * ctp);
-                    const px = ox + x * scale;
-                    const py = oy - ct * scale;
-                    if (first) { ctx.moveTo(px, py); first = false; }
-                    else { ctx.lineTo(px, py); }
-                }
-                ctx.stroke();
-
-                ctx.beginPath();
-                first = true;
-                for (let xp = -7; xp <= 7; xp += 0.2) {
-                    const ct = gamma * (i + betaInertial * xp);
-                    const x = gamma * (xp + betaInertial * i);
-                    const px = ox + x * scale;
-                    const py = oy - ct * scale;
-                    if (first) { ctx.moveTo(px, py); first = false; }
-                    else { ctx.lineTo(px, py); }
-                }
-                ctx.stroke();
-            }
-
-            // ct' axis (Cyan matching velocity worldline)
-            ctx.strokeStyle = '#06b6d4';
-            ctx.lineWidth = 3;
-            ctx.beginPath();
-            let firstCtPrime = true;
-            for (let ctp = -7; ctp <= 7; ctp += 0.1) {
-                const ct = gamma * ctp;
-                const x = gamma * betaInertial * ctp;
-                const px = ox + x * scale;
-                const py = oy - ct * scale;
-                if (firstCtPrime) { ctx.moveTo(px, py); firstCtPrime = false; }
+            let first = true;
+            for (let py = 0; py <= height; py += 2) {
+                const ctVal = (originY - py) / scale;
+                const xVal = Math.sqrt(rho * rho + ctVal * ctVal);
+                const px = originX + xVal * scale;
+                if (first) { ctx.moveTo(px, py); first = false; }
                 else { ctx.lineTo(px, py); }
             }
             ctx.stroke();
 
-            // x' axis (Violet)
-            ctx.strokeStyle = '#8b5cf6';
-            ctx.lineWidth = 3;
+            // Current Position Dot on Hyperbola at coordinate time t
+            const currentCt = t;
+            const currentX = Math.sqrt(rho * rho + currentCt * currentCt);
+            const dotPx = originX + currentX * scale;
+            const dotPy = originY - currentCt * scale;
+
+            ctx.fillStyle = '#38bdf8';
             ctx.beginPath();
-            let firstXPrime = true;
-            for (let xp = -7; xp <= 7; xp += 0.1) {
-                const ct = gamma * betaInertial * xp;
-                const x = gamma * xp;
-                const px = ox + x * scale;
-                const py = oy - ct * scale;
-                if (firstXPrime) { ctx.moveTo(px, py); firstXPrime = false; }
-                else { ctx.lineTo(px, py); }
-            }
+            ctx.arc(dotPx, dotPy, 6, 0, 2 * Math.PI);
+            ctx.fill();
+            ctx.strokeStyle = '#ffffff';
+            ctx.lineWidth = 1.5;
             ctx.stroke();
 
-            ctx.font = '11px JetBrains Mono, monospace';
+            // Legend at Bottom-Left to avoid obscuring trajectory/dot
+            ctx.fillStyle = 'rgba(15, 23, 42, 0.85)';
+            ctx.fillRect(10, height - 90, 195, 80);
+            ctx.strokeStyle = '#334155';
+            ctx.strokeRect(10, height - 90, 195, 80);
 
-            // Clamped ct' Label
-            const topCt = gamma * 4.8;
-            const topX = gamma * betaInertial * 4.8;
-            let ctLabelX = ox + topX * scale + 8;
-            let ctLabelY = oy - topCt * scale;
-            ctLabelX = Math.max(10, Math.min(width - 65, ctLabelX));
-            ctLabelY = Math.max(25, Math.min(height - 15, ctLabelY));
-
-            ctx.fillStyle = '#0f172a';
-            ctx.fillRect(ctLabelX - 4, ctLabelY - 13, 56, 18);
-            ctx.strokeStyle = '#06b6d4';
-            ctx.strokeRect(ctLabelX - 4, ctLabelY - 13, 56, 18);
-            ctx.fillStyle = '#22d3ee';
-            ctx.fillText("ct' axis", ctLabelX, ctLabelY);
-
-            // Clamped x' Label
-            const rightCt = gamma * betaInertial * 4.8;
-            const rightX = gamma * 4.8;
-            let xLabelX = ox + rightX * scale + 8;
-            let xLabelY = oy - rightCt * scale;
-            xLabelX = Math.max(10, Math.min(width - 60, xLabelX));
-            xLabelY = Math.max(25, Math.min(height - 15, xLabelY));
-
-            ctx.fillStyle = '#0f172a';
-            ctx.fillRect(xLabelX - 4, xLabelY - 13, 52, 18);
-            ctx.strokeStyle = '#8b5cf6';
-            ctx.strokeRect(xLabelX - 4, xLabelY - 13, 52, 18);
-            ctx.fillStyle = '#c084fc';
-            ctx.fillText("x' axis", xLabelX, xLabelY);
+            drawAxisLabel(ctx, '⚡ Light cones: x = ±ct', 20, height - 68, '#eab308');
+            drawAxisLabel(ctx, '── Rindler Worldline', 20, height - 48, '#ec4899');
+            drawAxisLabel(ctx, '- - Event horizon: x = ct - ρ', 20, height - 28, '#ec4899');
         }
 
-        window.onload = function() {
-            updateSimulation();
-            window.addEventListener('resize', renderCanvases);
-            if (window.MathJax && window.MathJax.typesetPromise) {
-                window.MathJax.typesetPromise().catch((err) => console.log('MathJax error:', err));
-            }
-        };
-    </script>
-    <script>
-  if ('serviceWorker' in navigator) {
-    window.addEventListener('load', () => {
-      navigator.serviceWorker.register('./sw.js').catch(err => console.log('SW registration failed:', err));
-    });
-  }
-</script>
-</body>
-</html>
+        function renderBoosted(ctx, width, height, beta, g, t, rho) {
+            ctx.clearRect(0, 0, width, height);
+            const scale = width / 12;
+            const originX = width / 2;
+            const originY = height / 2;
+
+            drawGrid(ctx, width, height, scale, originX, originY);
+
+            const gamma = 1
