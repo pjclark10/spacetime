@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Minkowski Spacetime Simulator</title>
+    <title>Minkowski Spacetime Simulator & Relativistic Dashboard</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {
@@ -11,151 +11,234 @@
             theme: {
                 extend: {
                     colors: {
-                        dark: { 900: '#0B0F19', 800: '#111827', 700: '#1F2937', 600: '#374151' },
-                        velocityColor: { 500: '#06b6d4', 400: '#22d3ee' },
-                        accelColor: { 500: '#f97316', 400: '#fb923c' },
-                        horizonColor: { 500: '#ec4899', 400: '#f472b6' },
-                        spaceAxisColor: { 500: '#8b5cf6', 400: '#a78bfa' },
-                        lightConeColor: { 500: '#eab308', 400: '#facc15' }
+                        dark: {
+                            900: '#0B0F19',
+                            800: '#111827',
+                            700: '#1F2937',
+                            600: '#374151'
+                        },
+                        velocityColor: {
+                            500: '#06b6d4',
+                            400: '#22d3ee',
+                        },
+                        accelColor: {
+                            500: '#f97316',
+                            400: '#fb923c',
+                        },
+                        horizonColor: {
+                            500: '#ec4899',
+                            400: '#f472b6',
+                        },
+                        spaceAxisColor: {
+                            500: '#8b5cf6',
+                            400: '#a78bfa',
+                        },
+                        lightConeColor: {
+                            500: '#eab308',
+                            400: '#facc15'
+                        }
                     }
                 }
             }
         }
     </script>
     <script>
-        window.MathJax = { tex: { inlineMath: [['$', '$'], ['\\(', '\\)']] }, startup: { typeset: true } };
+        window.MathJax = {
+            tex: {
+                inlineMath: [['$', '$'], ['\\(', '\\)']],
+                displayMath: [['$$', '$$'], ['\\[', '\\]']]
+            },
+            startup: {
+                typeset: true
+            }
+        };
     </script>
     <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js" async></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
     <style>
-        body { font-family: 'Inter', sans-serif; -webkit-tap-highlight-color: transparent; touch-action: manipulation; }
+        body { font-family: 'Inter', sans-serif; -webkit-tap-highlight-color: transparent; }
         .font-mono { font-family: 'JetBrains Mono', monospace; }
+        ::-webkit-scrollbar { width: 5px; height: 5px; }
+        ::-webkit-scrollbar-track { background: #111827; }
+        ::-webkit-scrollbar-thumb { background: #374151; border-radius: 3px; }
         input[type="range"] { touch-action: pan-x; }
     </style>
 </head>
-<body class="bg-dark-900 text-gray-100 h-[100dvh] flex flex-col overflow-hidden antialiased select-none">
+<body class="bg-dark-900 text-gray-100 min-h-screen flex flex-col antialiased selection:bg-cyan-500 selection:text-white">
 
-    <!-- Compact Header -->
-    <header class="bg-dark-800/95 border-b border-gray-800 shrink-0 h-12 flex items-center px-3 justify-between">
-        <div class="flex items-center space-x-2">
-            <div class="w-7 h-7 rounded-lg bg-gradient-to-br from-velocityColor-500 to-accelColor-500 flex items-center justify-center">
-                <svg class="w-4 h-4 text-dark-900" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+    <header class="bg-dark-800/90 backdrop-blur border-b border-gray-800 sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+            <div class="flex items-center space-x-3">
+                <div class="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-gradient-to-br from-velocityColor-500 to-accelColor-500 flex items-center justify-center shadow-lg shadow-cyan-500/10">
+                    <svg class="w-5 h-5 sm:w-6 sm:h-6 text-dark-900" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+                    </svg>
+                </div>
+                <div>
+                    <h1 class="font-bold text-sm sm:text-lg tracking-tight bg-gradient-to-r from-velocityColor-400 via-lightConeColor-400 to-accelColor-400 bg-clip-text text-transparent">Minkowski Spacetime Suite</h1>
+                    <p class="text-[10px] sm:text-xs text-gray-400">Special Relativity & Kinematics</p>
+                </div>
             </div>
-            <h1 class="font-bold text-xs sm:text-sm tracking-tight bg-gradient-to-r from-velocityColor-400 to-lightConeColor-400 bg-clip-text text-transparent">Minkowski Spacetime Simulator</h1>
-        </div>
-        <div class="flex items-center space-x-2">
-            <span class="text-[10px] font-mono bg-cyan-500/10 text-cyan-400 px-2 py-0.5 rounded border border-cyan-500/20">c = 1</span>
+
+            <div class="flex items-center space-x-2">
+                <button onclick="toggleGuide()" class="px-3 py-1.5 text-xs bg-dark-700 hover:bg-dark-600 border border-gray-700 rounded-lg transition-all flex items-center space-x-1.5 active:scale-95">
+                    <svg class="w-4 h-4 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                    <span class="hidden sm:inline">Guide</span>
+                </button>
+            </div>
         </div>
     </header>
 
-    <!-- Main No-Scroll Workspace -->
-    <main class="flex-1 flex flex-col p-2 gap-2 max-w-7xl mx-auto w-full overflow-hidden">
+    <main class="flex-1 max-w-7xl w-full mx-auto p-3 sm:p-6 grid grid-cols-1 lg:grid-cols-4 gap-4 sm:gap-6">
         
-        <!-- Dual Canvases (Side-by-Side even on mobile for simultaneous viewing) -->
-        <section class="grid grid-cols-2 gap-2 flex-1 min-h-0">
-            
-            <!-- Canvas 1: Lab Frame S -->
-            <div class="bg-dark-800 rounded-xl p-2 border border-gray-800 flex flex-col shadow-md relative overflow-hidden">
-                <div class="flex items-center justify-between pb-1 mb-1 border-b border-gray-700/50">
-                    <span class="font-semibold text-[11px] sm:text-xs text-gray-200 flex items-center space-x-1.5">
-                        <span class="w-2 h-2 rounded-full bg-lightConeColor-500 inline-block"></span>
-                        <span>Lab Frame ($S$)</span>
-                    </span>
-                    <span class="text-[9px] font-mono text-gray-400">Event Horizon</span>
-                </div>
-                <div class="relative flex-1 w-full bg-dark-900 rounded-lg overflow-hidden flex items-center justify-center">
-                    <canvas id="minkowskiCanvas1" class="w-full h-full cursor-crosshair"></canvas>
-                    <div class="absolute bottom-1 left-1 bg-dark-900/90 backdrop-blur px-1.5 py-0.5 rounded border border-gray-700/80 text-[8px] sm:text-[10px] font-mono text-gray-300 flex items-center space-x-1 shadow">
-                        <span class="w-1.5 h-1.5 rounded-full bg-horizonColor-500 shrink-0"></span>
-                        <span>$x = ct - \rho$</span>
-                    </div>
-                </div>
-            </div>
+        <!-- Controls & Telemetry Sidebar -->
+        <section class="lg:col-span-1 space-y-4 sm:space-y-6">
+            <div class="bg-dark-800 rounded-2xl p-4 sm:p-5 border border-gray-800 shadow-xl space-y-4 sm:space-y-5">
+                <h2 class="font-semibold text-xs sm:text-sm uppercase tracking-wider text-gray-400 flex items-center justify-between">
+                    <span>Relativistic Controls</span>
+                    <span class="text-[10px] sm:text-xs px-2 py-0.5 bg-cyan-500/10 text-cyan-400 rounded-full font-mono">c = 1</span>
+                </h2>
 
-            <!-- Canvas 2: Boosted Frame S' -->
-            <div class="bg-dark-800 rounded-xl p-2 border border-gray-800 flex flex-col shadow-md relative overflow-hidden">
-                <div class="flex items-center justify-between pb-1 mb-1 border-b border-gray-700/50">
-                    <span class="font-semibold text-[11px] sm:text-xs text-gray-200 flex items-center space-x-1.5">
-                        <span class="w-2 h-2 rounded-full bg-spaceAxisColor-500 inline-block"></span>
-                        <span>Boosted Frame ($S'$)</span>
-                    </span>
-                    <span class="text-[9px] font-mono text-gray-400">Skewed Axes</span>
-                </div>
-                <div class="relative flex-1 w-full bg-dark-900 rounded-lg overflow-hidden flex items-center justify-center">
-                    <canvas id="minkowskiCanvas2" class="w-full h-full cursor-crosshair"></canvas>
-                    <div class="absolute bottom-1 left-1 bg-dark-900/90 backdrop-blur px-1.5 py-0.5 rounded border border-gray-700/80 text-[8px] sm:text-[10px] font-mono text-gray-300 flex items-center space-x-1 shadow">
-                        <span class="w-1.5 h-1.5 rounded-full bg-velocityColor-400 shrink-0"></span>
-                        <span><strong class="text-velocityColor-400">ct'</strong> matches vel</span>
-                    </div>
-                </div>
-            </div>
-
-        </section>
-
-        <!-- Compact Controls & Telemetry Dashboard (Fixed fit below canvases) -->
-        <section class="shrink-0 bg-dark-800 rounded-xl p-2.5 sm:p-3 border border-gray-800 grid grid-cols-1 md:grid-cols-2 gap-3 text-xs">
-            
-            <!-- Sliders Panel -->
-            <div class="space-y-2">
-                <!-- Velocity Slider -->
-                <div class="space-y-0.5 bg-dark-700/30 p-1.5 rounded-lg border border-gray-700/40">
-                    <div class="flex items-center justify-between text-[11px]">
-                        <label for="beta-slider" class="text-gray-300 font-medium">Velocity ($\beta = v/c$)</label>
-                        <span id="beta-val" class="font-mono text-velocityColor-400 font-bold bg-dark-900 px-1.5 py-0.5 rounded border border-gray-700">0.60</span>
+                <!-- Velocity (Beta) Slider -->
+                <div class="space-y-2 bg-dark-700/30 p-3 rounded-xl border border-gray-700/40">
+                    <div class="flex items-center justify-between">
+                        <label for="beta-slider" class="text-gray-300 text-xs sm:text-sm font-medium">Velocity ($\beta = v/c$)</label>
+                        <span id="beta-val" class="font-mono text-velocityColor-400 font-bold text-xs sm:text-sm bg-dark-900 px-2 py-0.5 rounded border border-gray-700">0.60</span>
                     </div>
                     <input id="beta-slider" type="range" min="-0.99" max="0.99" step="0.01" value="0.60" oninput="updateSimulation()"
-                           class="w-full accent-cyan-500 bg-dark-700 h-2 rounded cursor-pointer">
-                </div>
-
-                <!-- Proper Acceleration Slider -->
-                <div class="space-y-0.5 bg-dark-700/30 p-1.5 rounded-lg border border-gray-700/40">
-                    <div class="flex items-center justify-between text-[11px]">
-                        <label for="accel-slider" class="text-gray-300 font-medium">Proper Accel ($g$)</label>
-                        <span id="accel-val" class="font-mono text-accelColor-400 font-bold bg-dark-900 px-1.5 py-0.5 rounded border border-gray-700">1.00</span>
+                           class="w-full accent-cyan-500 bg-dark-700 h-2.5 sm:h-2 rounded-lg cursor-pointer">
+                    <div class="flex justify-between text-[10px] text-gray-400 font-mono">
+                        <span>-0.99</span>
+                        <span>0 (Rest)</span>
+                        <span>+0.99</span>
                     </div>
-                    <input id="accel-slider" type="range" min="0.1" max="3.0" step="0.05" value="1.0" oninput="updateSimulation()"
-                           class="w-full accent-orange-500 bg-dark-700 h-2 rounded cursor-pointer">
                 </div>
 
-                <!-- Time Parameter Slider -->
-                <div class="space-y-0.5 bg-dark-700/30 p-1.5 rounded-lg border border-gray-700/40">
-                    <div class="flex items-center justify-between text-[11px]">
-                        <label for="time-slider" class="text-gray-300 font-medium">Time Parameter ($t$)</label>
-                        <span id="time-val" class="font-mono text-purple-400 font-bold bg-dark-900 px-1.5 py-0.5 rounded border border-gray-700">1.50</span>
+                <!-- Proper Acceleration (g) Slider -->
+                <div class="space-y-2 bg-dark-700/30 p-3 rounded-xl border border-gray-700/40">
+                    <div class="flex items-center justify-between">
+                        <label for="accel-slider" class="text-gray-300 text-xs sm:text-sm font-medium">Proper Accel ($g$)</label>
+                        <span id="accel-val" class="font-mono text-accelColor-400 font-bold text-xs sm:text-sm bg-dark-900 px-2 py-0.5 rounded border border-gray-700">1.00</span>
+                    </div>
+                    <input id="accel-slider" type="range" min="0.1" max="5.0" step="0.05" value="1.0" oninput="updateSimulation()"
+                           class="w-full accent-orange-500 bg-dark-700 h-2.5 sm:h-2 rounded-lg cursor-pointer">
+                    <div class="flex justify-between text-[10px] text-gray-400 font-mono">
+                        <span>0.1</span>
+                        <span>1.0</span>
+                        <span>5.0</span>
+                    </div>
+                </div>
+
+                <!-- Time Parameter ($t$) Slider -->
+                <div class="space-y-2 bg-dark-700/30 p-3 rounded-xl border border-gray-700/40">
+                    <div class="flex items-center justify-between">
+                        <label for="time-slider" class="text-gray-300 text-xs sm:text-sm font-medium">Time Parameter ($t$)</label>
+                        <span id="time-val" class="font-mono text-purple-400 font-bold text-xs sm:text-sm bg-dark-900 px-2 py-0.5 rounded border border-gray-700">1.50</span>
                     </div>
                     <input id="time-slider" type="range" min="-5.0" max="5.0" step="0.1" value="1.5" oninput="updateSimulation()"
-                           class="w-full accent-purple-500 bg-dark-700 h-2 rounded cursor-pointer">
+                           class="w-full accent-purple-500 bg-dark-700 h-2.5 sm:h-2 rounded-lg cursor-pointer">
+                    <div class="flex justify-between text-[10px] text-gray-400 font-mono">
+                        <span>-5.0</span>
+                        <span>0.0</span>
+                        <span>+5.0</span>
+                    </div>
+                </div>
+
+                <!-- Presets -->
+                <div class="pt-1 border-t border-gray-700/50">
+                    <p class="text-[11px] text-gray-400 mb-2 font-medium">Quick Presets:</p>
+                    <div class="grid grid-cols-3 gap-2">
+                        <button onclick="setPreset(-0.6, 0.5, 1.0)" class="py-2 px-1 text-[11px] bg-dark-700 hover:bg-dark-600 rounded border border-gray-700 font-mono active:scale-95">\(\beta=-0.6\)</button>
+                        <button onclick="setPreset(0.0, 1.0, 1.5)" class="py-2 px-1 text-[11px] bg-dark-700 hover:bg-dark-600 rounded border border-gray-700 font-mono active:scale-95">\(\beta=0\)</button>
+                        <button onclick="setPreset(0.7, 1.0, 1.5)" class="py-2 px-1 text-[11px] bg-dark-700 hover:bg-dark-600 rounded border border-gray-700 font-mono active:scale-95">\(\beta=0.7\)</button>
+                    </div>
                 </div>
             </div>
 
-            <!-- Telemetry Panel -->
-            <div class="space-y-1.5 flex flex-col justify-between font-mono text-[11px]">
-                <div class="grid grid-cols-2 gap-1.5">
-                    <div class="bg-dark-700/40 p-2 rounded-lg border border-gray-700/40 flex flex-col justify-between">
-                        <span class="text-gray-400 text-[10px]">Lorentz ($\gamma$):</span>
-                        <span id="telemetry-gamma" class="text-velocityColor-400 font-bold text-xs">1.250</span>
+            <!-- Telemetry Card -->
+            <div class="bg-dark-800 rounded-2xl p-4 sm:p-5 border border-gray-800 shadow-xl space-y-3">
+                <h3 class="font-semibold text-xs sm:text-sm uppercase tracking-wider text-gray-400">Lorentz Invariants</h3>
+                
+                <div class="space-y-2.5 font-mono text-xs">
+                    <div class="flex justify-between items-center bg-dark-700/50 p-2.5 rounded-lg border border-gray-700/40">
+                        <span class="text-gray-400">Lorentz Factor ($\gamma$):</span>
+                        <span id="telemetry-gamma" class="text-velocityColor-400 font-bold">1.250</span>
                     </div>
-                    <div class="bg-dark-700/40 p-2 rounded-lg border border-gray-700/40 flex flex-col justify-between">
-                        <span class="text-gray-400 text-[10px]">Orthog ($U \cdot A$):</span>
-                        <span id="telemetry-dot" class="text-emerald-400 font-bold text-xs">0.0000</span>
-                    </div>
-                </div>
-                <div class="grid grid-cols-2 gap-1.5">
-                    <div class="bg-dark-700/40 p-1.5 rounded-lg border border-gray-700/40 flex items-center justify-between">
-                        <span class="text-gray-400 text-[10px]">$U^\mu$:</span>
+                    <div class="flex justify-between items-center bg-dark-700/50 p-2.5 rounded-lg border border-gray-700/40">
+                        <span class="text-gray-400">Four-Velocity $U^\mu$:</span>
                         <span id="telemetry-u" class="text-gray-200">(1.25, 0.75)</span>
                     </div>
-                    <div class="bg-dark-700/40 p-1.5 rounded-lg border border-gray-700/40 flex items-center justify-between">
-                        <span class="text-gray-400 text-[10px]">$A^\mu$:</span>
+                    <div class="flex justify-between items-center bg-dark-700/50 p-2.5 rounded-lg border border-gray-700/40">
+                        <span class="text-gray-400">Four-Accel $A^\mu$:</span>
                         <span id="telemetry-a" class="text-accelColor-400">(1.56, 2.08)</span>
                     </div>
+                    <div class="flex justify-between items-center bg-dark-700/50 p-2.5 rounded-lg border border-gray-700/40">
+                        <span class="text-gray-400">Orthogonality ($U \cdot A$):</span>
+                        <span id="telemetry-dot" class="text-emerald-400 font-bold">0.0000</span>
+                    </div>
                 </div>
-                <!-- Quick Presets -->
-                <div class="grid grid-cols-3 gap-1 pt-0.5">
-                    <button onclick="setPreset(-0.6, 0.5, 1.0)" class="py-1 px-1 bg-dark-700 hover:bg-dark-600 rounded border border-gray-700 text-[10px] active:scale-95">\(\beta=-0.6\)</button>
-                    <button onclick="setPreset(0.0, 1.0, 1.5)" class="py-1 px-1 bg-dark-700 hover:bg-dark-600 rounded border border-gray-700 text-[10px] active:scale-95">\(\beta=0\)</button>
-                    <button onclick="setPreset(0.7, 1.0, 1.5)" class="py-1 px-1 bg-dark-700 hover:bg-dark-600 rounded border border-gray-700 text-[10px] active:scale-95">\(\beta=0.7\)</button>
+            </div>
+        </section>
+
+        <!-- Canvas Viewports Area -->
+        <section class="lg:col-span-3 space-y-4 sm:space-y-6 flex flex-col">
+            
+            <div id="guide-panel" class="bg-gradient-to-r from-dark-800 to-dark-700/80 border border-cyan-500/30 rounded-2xl p-4 sm:p-5 shadow-xl transition-all">
+                <div class="flex items-start justify-between">
+                    <div class="flex items-center space-x-3">
+                        <div class="p-2 bg-cyan-500/10 text-cyan-400 rounded-xl shrink-0">
+                            <svg class="w-5 h-5 sm:w-6 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/></svg>
+                        </div>
+                        <div>
+                            <h3 class="font-semibold text-sm sm:text-base text-gray-100">Dual-View Minkowski Spacetime Comparison</h3>
+                            <p class="text-xs text-gray-300 mt-0.5 leading-relaxed">Left: Lab Frame ($S$) with dashed yellow light cones, cyan uniform velocity path, extended orange acceleration hyperbola, and dashed magenta event horizon ($x = ct - \rho$ where $\rho = 1/g$). Right: Boosted Frame ($S'$) with clamped axes ($ct'$ in cyan, $x'$ in violet).</p>
+                        </div>
+                    </div>
+                    <button onclick="toggleGuide()" class="text-gray-400 hover:text-white p-1 shrink-0">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                    </button>
                 </div>
+            </div>
+
+            <!-- Canvases Grid -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6 flex-1">
+                
+                <!-- Canvas Card 1: Lab Frame S -->
+                <div class="bg-dark-800 rounded-2xl p-3 sm:p-4 border border-gray-800 shadow-xl flex flex-col">
+                    <div class="flex items-center justify-between pb-2.5 mb-2 border-b border-gray-700/50">
+                        <div class="flex items-center space-x-2">
+                            <span class="w-2.5 h-2.5 rounded-full bg-lightConeColor-500 inline-block shadow-sm shadow-yellow-500"></span>
+                            <h4 class="font-semibold text-xs sm:text-sm text-gray-200">Laboratory Frame ($S$)</h4>
+                        </div>
+                        <span class="text-[11px] font-mono text-gray-400">Cartesian $(ct, x)$</span>
+                    </div>
+                    <div class="relative flex-1 h-[340px] sm:h-[400px] bg-dark-900 rounded-xl overflow-hidden border border-gray-800 flex items-center justify-center">
+                        <canvas id="minkowskiCanvas1" class="w-full h-full cursor-crosshair"></canvas>
+                        <div class="absolute bottom-2.5 left-2.5 bg-dark-800/90 backdrop-blur px-2 py-1 rounded-lg border border-gray-700 text-[10px] sm:text-[11px] font-mono text-gray-300 flex items-center space-x-1.5 shadow-lg">
+                            <span class="w-2 h-2 rounded-full bg-horizonColor-500 shrink-0"></span>
+                            <span>Event horizon: $x = ct - \rho$ ($\rho = 1/g$)</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Canvas Card 2: Boosted Frame S' Perspective -->
+                <div class="bg-dark-800 rounded-2xl p-3 sm:p-4 border border-gray-800 shadow-xl flex flex-col">
+                    <div class="flex items-center justify-between pb-2.5 mb-2 border-b border-gray-700/50">
+                        <div class="flex items-center space-x-2">
+                            <span class="w-2.5 h-2.5 rounded-full bg-spaceAxisColor-500 inline-block shadow-sm shadow-violet-500"></span>
+                            <h4 class="font-semibold text-xs sm:text-sm text-gray-200">Boosted Frame ($S'$) Perspective</h4>
+                        </div>
+                        <span class="text-[11px] font-mono text-gray-400">Skewed $(ct', x')$</span>
+                    </div>
+                    <div class="relative flex-1 h-[340px] sm:h-[400px] bg-dark-900 rounded-xl overflow-hidden border border-gray-800 flex items-center justify-center">
+                        <canvas id="minkowskiCanvas2" class="w-full h-full cursor-crosshair"></canvas>
+                        <div class="absolute bottom-2.5 left-2.5 bg-dark-800/90 backdrop-blur px-2 py-1 rounded-lg border border-gray-700 text-[10px] sm:text-[11px] font-mono text-gray-300 flex items-center space-x-1.5 shadow-lg">
+                            <span class="w-2 h-2 rounded-full bg-velocityColor-400 shrink-0"></span>
+                            <span><strong class="text-velocityColor-400">ct'</strong> matches vel, <strong class="text-spaceAxisColor-400">x'</strong> in violet</span>
+                        </div>
+                    </div>
+                </div>
+
             </div>
 
         </section>
@@ -166,6 +249,12 @@
         let betaInertial = 0.6;
         let accel = 1.0;
         let timeParam = 1.5;
+        let isGuideOpen = true;
+
+        function toggleGuide() {
+            isGuideOpen = !isGuideOpen;
+            document.getElementById('guide-panel').style.display = isGuideOpen ? 'block' : 'none';
+        }
 
         function setPreset(bVal, gVal, tVal) {
             betaInertial = bVal;
@@ -189,6 +278,7 @@
             const gamma = 1.0 / Math.sqrt(Math.max(0.0001, 1.0 - betaInertial * betaInertial));
             const u0 = gamma;
             const u1 = gamma * betaInertial;
+
             const a0 = accel > 0 ? accel * gamma * gamma * betaInertial : 0;
             const a1 = accel > 0 ? accel * gamma * gamma : 0;
             const dotProduct = -u0 * a0 + u1 * a1;
@@ -225,37 +315,58 @@
 
             const ox = width / 2;
             const oy = height / 2;
-            const scale = Math.min(width, height) / 10;
+            const scale = Math.min(width, height) / 12;
 
-            // Grid lines
+            // Cartesian grid
             ctx.strokeStyle = '#1f2937';
             ctx.lineWidth = 1;
-            for (let i = -5; i <= 5; i++) {
-                ctx.beginPath(); ctx.moveTo(ox + i * scale, 0); ctx.lineTo(ox + i * scale, height); ctx.stroke();
-                ctx.beginPath(); ctx.moveTo(0, oy - i * scale); ctx.lineTo(width, oy - i * scale); ctx.stroke();
+            for (let i = -6; i <= 6; i++) {
+                ctx.beginPath();
+                ctx.moveTo(ox + i * scale, 0);
+                ctx.lineTo(ox + i * scale, height);
+                ctx.stroke();
+                ctx.beginPath();
+                ctx.moveTo(0, oy - i * scale);
+                ctx.lineTo(width, oy - i * scale);
+                ctx.stroke();
             }
 
-            // Light Cone
+            // Dashed Bright Yellow Light Cone
             ctx.strokeStyle = '#eab308';
             ctx.lineWidth = 2.5;
+            ctx.setLineDash([6, 4]);
             ctx.shadowColor = '#eab308';
             ctx.shadowBlur = 4;
             ctx.beginPath();
-            ctx.moveTo(ox - scale * 5, oy + scale * 5); ctx.lineTo(ox + scale * 5, oy - scale * 5);
-            ctx.moveTo(ox - scale * 5, oy - scale * 5); ctx.lineTo(ox + scale * 5, oy + scale * 5);
+            ctx.moveTo(ox - scale * 6, oy + scale * 6);
+            ctx.lineTo(ox + scale * 6, oy - scale * 6);
+            ctx.moveTo(ox - scale * 6, oy - scale * 6);
+            ctx.lineTo(ox + scale * 6, oy + scale * 6);
             ctx.stroke();
+            ctx.setLineDash([]);
             ctx.shadowBlur = 0;
 
             // Lab Axes
             ctx.strokeStyle = '#9ca3af';
-            ctx.lineWidth = 1.5;
-            ctx.beginPath(); ctx.moveTo(ox, height); ctx.lineTo(ox, 0); ctx.stroke();
-            ctx.beginPath(); ctx.moveTo(0, oy); ctx.lineTo(width, oy); ctx.stroke();
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.moveTo(ox, height);
+            ctx.lineTo(ox, 0);
+            ctx.stroke();
+            ctx.beginPath();
+            ctx.moveTo(0, oy);
+            ctx.lineTo(width, oy);
+            ctx.stroke();
 
-            // Event Horizon: x = ct - rho where rho = 1/g
+            ctx.fillStyle = '#9ca3af';
+            ctx.font = '11px JetBrains Mono, monospace';
+            ctx.fillText('ct', ox + 8, 16);
+            ctx.fillText('x', width - 18, oy - 8);
+
+            // Dashed Magenta Event Horizon: x = ct - rho (rho = 1/g)
             ctx.strokeStyle = '#ec4899';
             ctx.lineWidth = 2;
-            ctx.setLineDash([4, 4]);
+            ctx.setLineDash([5, 5]);
             ctx.beginPath();
             const rho = 1.0 / accel;
             const horizonOffset = scale * rho;
@@ -264,64 +375,79 @@
             ctx.stroke();
             ctx.setLineDash([]);
 
-            // Uniform Velocity Path
+            // Uniform Motion Worldline
             ctx.strokeStyle = '#06b6d4';
-            ctx.lineWidth = 2.5;
+            ctx.lineWidth = 3;
             ctx.beginPath();
             let firstBeta = true;
-            for (let t = -5; t <= 5; t += 0.05) {
-                const px = ox + (betaInertial * t) * scale;
+            for (let t = -6; t <= 6; t += 0.05) {
+                const xInertial = betaInertial * t;
+                const px = ox + xInertial * scale;
                 const py = oy - t * scale;
-                if (firstBeta) { ctx.moveTo(px, py); firstBeta = false; } else { ctx.lineTo(px, py); }
+                if (firstBeta) { ctx.moveTo(px, py); firstBeta = false; }
+                else { ctx.lineTo(px, py); }
             }
             ctx.stroke();
 
-            const currTPx = ox + (betaInertial * timeParam) * scale;
+            const currXInertial = betaInertial * timeParam;
+            const currTPx = ox + currXInertial * scale;
             const currTPy = oy - timeParam * scale;
-            ctx.fillStyle = '#22d3ee';
-            ctx.beginPath(); ctx.arc(currTPx, currTPy, 4, 0, 2 * Math.PI); ctx.fill();
 
-            // Accelerated Path
-            let hypPx = ox, hypPy = oy;
+            ctx.fillStyle = '#22d3ee';
+            ctx.beginPath();
+            ctx.arc(currTPx, currTPy, 5, 0, 2 * Math.PI);
+            ctx.fill();
+
+            // Extended Hyperbolic Acceleration Trajectory
+            let hypPx = 0, hypPy = 0;
             if (accel > 0) {
                 ctx.strokeStyle = '#f97316';
-                ctx.lineWidth = 2.5;
+                ctx.lineWidth = 3;
                 ctx.beginPath();
                 let firstHyp = true;
-                for (let t = -5; t <= 5; t += 0.02) {
+                for (let t = -6; t <= 6; t += 0.01) {
                     const sign = t >= 0 ? 1 : -1;
                     const tAbs = Math.abs(t);
                     const xHyp = sign * (1.0 / accel) * (Math.sqrt(1.0 + accel * accel * tAbs * tAbs) - 1.0);
                     const px = ox + xHyp * scale;
                     const py = oy - t * scale;
-                    if (firstHyp) { ctx.moveTo(px, py); firstHyp = false; } else { ctx.lineTo(px, py); }
+                    if (firstHyp) { ctx.moveTo(px, py); firstHyp = false; }
+                    else { ctx.lineTo(px, py); }
                 }
                 ctx.stroke();
 
                 const signT = timeParam >= 0 ? 1 : -1;
-                const currXHyp = signT * (1.0 / accel) * (Math.sqrt(1.0 + accel * accel * Math.abs(timeParam) * Math.abs(timeParam)) - 1.0);
+                const tParamAbs = Math.abs(timeParam);
+                const currXHyp = signT * (1.0 / accel) * (Math.sqrt(1.0 + accel * accel * tParamAbs * tParamAbs) - 1.0);
                 hypPx = ox + currXHyp * scale;
                 hypPy = oy - timeParam * scale;
+
                 ctx.fillStyle = '#fb923c';
-                ctx.beginPath(); ctx.arc(hypPx, hypPy, 4, 0, 2 * Math.PI); ctx.fill();
+                ctx.beginPath();
+                ctx.arc(hypPx, hypPy, 5, 0, 2 * Math.PI);
+                ctx.fill();
             }
 
-            // Labels
-            ctx.font = '9px JetBrains Mono, monospace';
+            ctx.font = '11px JetBrains Mono, monospace';
+            const dist = Math.hypot(currTPx - hypPx, currTPy - hypPy);
+            
+            // Uniform Velocity Label
             ctx.fillStyle = '#0b0f19';
-            ctx.fillRect(currTPx + 4, currTPy - 12, 75, 14);
+            ctx.fillRect(currTPx + 8, currTPy - 16, 125, 18);
             ctx.strokeStyle = '#06b6d4';
-            ctx.strokeRect(currTPx + 4, currTPy - 12, 75, 14);
+            ctx.strokeRect(currTPx + 8, currTPy - 16, 125, 18);
             ctx.fillStyle = '#22d3ee';
-            ctx.fillText(`v = ${betaInertial.toFixed(2)}`, currTPx + 7, currTPy - 2);
+            ctx.fillText(`Uniform (β=${betaInertial.toFixed(2)})`, currTPx + 12, currTPy - 3);
 
+            // Accelerated Label with Vertical Offset
             if (accel > 0) {
+                const yOffset = dist < 40 ? 20 : -16;
                 ctx.fillStyle = '#0b0f19';
-                ctx.fillRect(hypPx + 4, hypPy + 4, 75, 14);
+                ctx.fillRect(hypPx + 8, hypPy + yOffset, 125, 18);
                 ctx.strokeStyle = '#f97316';
-                ctx.strokeRect(hypPx + 4, hypPy + 4, 75, 14);
+                ctx.strokeRect(hypPx + 8, hypPy + yOffset, 125, 18);
                 ctx.fillStyle = '#fb923c';
-                ctx.fillText(`g = ${accel.toFixed(2)}`, hypPx + 7, hypPy + 14);
+                ctx.fillText(`Accel (g=${accel.toFixed(2)})`, hypPx + 12, hypPy + yOffset + 13);
             }
         }
 
@@ -331,76 +457,130 @@
 
             const ox = width / 2;
             const oy = height / 2;
-            const scale = Math.min(width, height) / 10;
+            const scale = Math.min(width, height) / 12;
 
-            // Light Cone
+            // Dashed Bright Yellow Light Cone
             ctx.strokeStyle = '#eab308';
             ctx.lineWidth = 2.5;
+            ctx.setLineDash([6, 4]);
             ctx.shadowColor = '#eab308';
             ctx.shadowBlur = 4;
             ctx.beginPath();
-            ctx.moveTo(ox - scale * 5, oy + scale * 5); ctx.lineTo(ox + scale * 5, oy - scale * 5);
-            ctx.moveTo(ox - scale * 5, oy - scale * 5); ctx.lineTo(ox + scale * 5, oy + scale * 5);
+            ctx.moveTo(ox - scale * 6, oy + scale * 6);
+            ctx.lineTo(ox + scale * 6, oy - scale * 6);
+            ctx.moveTo(ox - scale * 6, oy - scale * 6);
+            ctx.lineTo(ox + scale * 6, oy + scale * 6);
             ctx.stroke();
+            ctx.setLineDash([]);
             ctx.shadowBlur = 0;
 
-            // Neutral Lab Reference Axes
-            ctx.strokeStyle = '#4b5563';
-            ctx.lineWidth = 1;
-            ctx.setLineDash([2, 2]);
-            ctx.beginPath(); ctx.moveTo(ox, height); ctx.lineTo(ox, 0); ctx.stroke();
-            ctx.beginPath(); ctx.moveTo(0, oy); ctx.lineTo(width, oy); ctx.stroke();
+            // Neutral Lab Axes
+            ctx.strokeStyle = '#6b7280';
+            ctx.lineWidth = 1.5;
+            ctx.setLineDash([3, 3]);
+            ctx.beginPath();
+            ctx.moveTo(ox, height);
+            ctx.lineTo(ox, 0);
+            ctx.stroke();
+            ctx.beginPath();
+            ctx.moveTo(0, oy);
+            ctx.lineTo(width, oy);
+            ctx.stroke();
             ctx.setLineDash([]);
 
             const gamma = 1.0 / Math.sqrt(Math.max(0.0001, 1.0 - betaInertial * betaInertial));
+            
+            ctx.strokeStyle = 'rgba(55, 65, 81, 0.4)';
+            ctx.lineWidth = 1;
+            for (let i = -6; i <= 6; i++) {
+                ctx.beginPath();
+                let first = true;
+                for (let ctp = -6; ctp <= 6; ctp += 0.2) {
+                    const ct = gamma * (ctp + betaInertial * i);
+                    const x = gamma * (i + betaInertial * ctp);
+                    const px = ox + x * scale;
+                    const py = oy - ct * scale;
+                    if (first) { ctx.moveTo(px, py); first = false; }
+                    else { ctx.lineTo(px, py); }
+                }
+                ctx.stroke();
 
-            // ct' axis (Cyan matching velocity worldline)
+                ctx.beginPath();
+                first = true;
+                for (let xp = -6; xp <= 6; xp += 0.2) {
+                    const ct = gamma * (i + betaInertial * xp);
+                    const x = gamma * (xp + betaInertial * i);
+                    const px = ox + x * scale;
+                    const py = oy - ct * scale;
+                    if (first) { ctx.moveTo(px, py); first = false; }
+                    else { ctx.lineTo(px, py); }
+                }
+                ctx.stroke();
+            }
+
+            // ct' axis (Cyan) matching velocity worldline
             ctx.strokeStyle = '#06b6d4';
-            ctx.lineWidth = 2.5;
+            ctx.lineWidth = 3;
             ctx.beginPath();
-            let firstCt = true;
-            for (let ctp = -5; ctp <= 5; ctp += 0.1) {
+            let firstCtPrime = true;
+            for (let ctp = -6; ctp <= 6; ctp += 0.1) {
                 const ct = gamma * ctp;
                 const x = gamma * betaInertial * ctp;
                 const px = ox + x * scale;
                 const py = oy - ct * scale;
-                if (firstCt) { ctx.moveTo(px, py); firstCt = false; } else { ctx.lineTo(px, py); }
+                if (firstCtPrime) { ctx.moveTo(px, py); firstCtPrime = false; }
+                else { ctx.lineTo(px, py); }
             }
             ctx.stroke();
 
             // x' axis (Violet)
             ctx.strokeStyle = '#8b5cf6';
-            ctx.lineWidth = 2.5;
+            ctx.lineWidth = 3;
             ctx.beginPath();
-            let firstX = true;
-            for (let xp = -5; xp <= 5; xp += 0.1) {
+            let firstXPrime = true;
+            for (let xp = -6; xp <= 6; xp += 0.1) {
                 const ct = gamma * betaInertial * xp;
                 const x = gamma * xp;
                 const px = ox + x * scale;
                 const py = oy - ct * scale;
-                if (firstX) { ctx.moveTo(px, py); firstX = false; } else { ctx.lineTo(px, py); }
+                if (firstXPrime) { ctx.moveTo(px, py); firstXPrime = false; }
+                else { ctx.lineTo(px, py); }
             }
             ctx.stroke();
 
-            // Clamped Axis Labels
-            ctx.font = '9px JetBrains Mono, monospace';
-            const topCt = gamma * 4.2;
-            const topX = gamma * betaInertial * 4.2;
-            let ctX = Math.max(4, Math.min(width - 45, ox + topX * scale + 4));
-            let ctY = Math.max(12, Math.min(height - 10, oy - topCt * scale));
+            ctx.font = '11px JetBrains Mono, monospace';
 
-            ctx.fillStyle = '#0b0f19'; ctx.fillRect(ctX, ctY - 10, 42, 14);
-            ctx.strokeStyle = '#06b6d4'; ctx.strokeRect(ctX, ctY - 10, 42, 14);
-            ctx.fillStyle = '#22d3ee'; ctx.fillText("ct' axis", ctX + 3, ctY);
+            // ct' label clamping
+            const topCt = gamma * 4.8;
+            const topX = gamma * betaInertial * 4.8;
+            let ctLabelX = ox + topX * scale + 8;
+            let ctLabelY = oy - topCt * scale;
 
-            const rightCt = gamma * betaInertial * 4.2;
-            const rightX = gamma * 4.2;
-            let xX = Math.max(4, Math.min(width - 40, ox + rightX * scale + 4));
-            let xY = Math.max(12, Math.min(height - 10, oy - rightCt * scale));
+            ctLabelX = Math.max(8, Math.min(width - 60, ctLabelX));
+            ctLabelY = Math.max(20, Math.min(height - 12, ctLabelY));
+            
+            ctx.fillStyle = '#0b0f19';
+            ctx.fillRect(ctLabelX - 4, ctLabelY - 13, 56, 18);
+            ctx.strokeStyle = '#06b6d4';
+            ctx.strokeRect(ctLabelX - 4, ctLabelY - 13, 56, 18);
+            ctx.fillStyle = '#22d3ee';
+            ctx.fillText("ct' axis", ctLabelX, ctLabelY);
 
-            ctx.fillStyle = '#0b0f19'; ctx.fillRect(xX, xY - 10, 38, 14);
-            ctx.strokeStyle = '#8b5cf6'; ctx.strokeRect(xX, xY - 10, 38, 14);
-            ctx.fillStyle = '#c084fc'; ctx.fillText("x' axis", xX + 3, xY);
+            // x' label clamping
+            const rightCt = gamma * betaInertial * 4.8;
+            const rightX = gamma * 4.8;
+            let xLabelX = ox + rightX * scale + 8;
+            let xLabelY = oy - rightCt * scale;
+
+            xLabelX = Math.max(8, Math.min(width - 55, xLabelX));
+            xLabelY = Math.max(20, Math.min(height - 12, xLabelY));
+
+            ctx.fillStyle = '#0b0f19';
+            ctx.fillRect(xLabelX - 4, xLabelY - 13, 52, 18);
+            ctx.strokeStyle = '#8b5cf6';
+            ctx.strokeRect(xLabelX - 4, xLabelY - 13, 52, 18);
+            ctx.fillStyle = '#c084fc';
+            ctx.fillText("x' axis", xLabelX, xLabelY);
         }
 
         window.onload = function() {
