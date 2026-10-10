@@ -1,11 +1,14 @@
 <!DOCTYPE html>
 <html lang="en" class="dark">
 <head>
-    <link rel="manifest" href="manifest.json">
-    <meta name="theme-color" content="#020617">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Minkowski Spacetime Simulator</title>
+    
+    <!-- PWA & Theme Configuration -->
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#020617">
+
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {
@@ -76,7 +79,7 @@
         ::-webkit-scrollbar-track { background: #0f172a; }
         ::-webkit-scrollbar-thumb { background: #334155; border-radius: 2px; }
         input[type="range"] { touch-action: pan-x; }
-        canvas { pointer-events: none; }
+        canvas { pointer-events: none; } /* Allows touch to pass through canvases for smooth scrolling */
     </style>
 </head>
 <body class="flex flex-col antialiased selection:bg-cyan-500 selection:text-white">
@@ -101,11 +104,13 @@
             <div><span class="text-slate-400">U·A:</span> <span id="badge-dot" class="text-emerald-400 font-bold">0.0000</span></div>
         </div>
     </header>
-<!-- Main container with extra bottom padding so content isn't hidden behind the floating HUD -->
-    <main class="w-full max-w-7xl mx-auto flex flex-col md:grid md:grid-cols-2 gap-4 p-3 md:p-6 pb-36 md:pb-24">
+
+    <!-- Main Container with generous bottom padding (pb-44) so content isn't covered by the floating panel -->
+    <main class="w-full max-w-7xl mx-auto flex flex-col md:grid md:grid-cols-2 gap-4 p-3 md:p-6 pb-44">
         
         <!-- Laboratory Frame (S) Viewport -->
         <div class="relative bg-slate-900 rounded-2xl border border-slate-800 overflow-hidden flex flex-col shadow-2xl h-[400px] sm:h-[480px]">
+            <!-- Canvas Header Bar -->
             <div class="absolute top-2 left-2 right-2 z-10 flex items-center justify-between pointer-events-none">
                 <div class="bg-slate-900/85 backdrop-blur-md px-3 py-1.5 rounded-xl border border-slate-800 text-xs font-medium flex items-center space-x-2 pointer-events-auto shadow-lg">
                     <span class="w-2.5 h-2.5 rounded-full bg-lightConeColor-500 shadow-sm shadow-yellow-500"></span>
@@ -115,9 +120,13 @@
                     Cartesian $(ct, x)$
                 </div>
             </div>
+
+            <!-- Canvas Element -->
             <div class="flex-1 w-full h-full relative">
                 <canvas id="minkowskiCanvas1" class="w-full h-full block"></canvas>
             </div>
+
+            <!-- Event Horizon Legend Overlay -->
             <div class="absolute bottom-2 left-2 right-2 z-10 flex items-center justify-between pointer-events-none">
                 <div class="bg-slate-900/85 backdrop-blur-md px-2.5 py-1 rounded-lg border border-slate-800 text-[10px] font-mono text-slate-300 flex items-center space-x-1.5 pointer-events-auto">
                     <span class="w-2 h-2 rounded-full bg-horizonColor-500 shrink-0"></span>
@@ -128,6 +137,7 @@
 
         <!-- Boosted Frame (S') Viewport -->
         <div class="relative bg-slate-900 rounded-2xl border border-slate-800 overflow-hidden flex flex-col shadow-2xl h-[400px] sm:h-[480px]">
+            <!-- Canvas Header Bar -->
             <div class="absolute top-2 left-2 right-2 z-10 flex items-center justify-between pointer-events-none">
                 <div class="bg-slate-900/85 backdrop-blur-md px-3 py-1.5 rounded-xl border border-slate-800 text-xs font-medium flex items-center space-x-2 pointer-events-auto shadow-lg">
                     <span class="w-2.5 h-2.5 rounded-full bg-spaceAxisColor-500 shadow-sm shadow-violet-500"></span>
@@ -137,9 +147,13 @@
                     Skewed $(ct', x')$
                 </div>
             </div>
+
+            <!-- Canvas Element -->
             <div class="flex-1 w-full h-full relative">
                 <canvas id="minkowskiCanvas2" class="w-full h-full block"></canvas>
             </div>
+
+            <!-- Color Coding Legend Overlay -->
             <div class="absolute bottom-2 left-2 right-2 z-10 flex items-center justify-between pointer-events-none">
                 <div class="bg-slate-900/85 backdrop-blur-md px-2.5 py-1 rounded-lg border border-slate-800 text-[10px] font-mono text-slate-300 flex items-center space-x-2 pointer-events-auto">
                     <span class="flex items-center space-x-1"><span class="w-2 h-2 rounded-full bg-velocityColor-400"></span><span class="text-velocityColor-400 font-semibold">ct'</span></span>
@@ -148,6 +162,8 @@
                 </div>
             </div>
         </div>
+
+    </main>
 
     <!-- Floating Glassmorphism Controls Panel -->
     <div class="fixed bottom-4 left-1/2 -translate-x-1/2 z-30 w-[94%] max-w-2xl bg-slate-900/90 backdrop-blur-md border border-slate-800 rounded-2xl p-3 sm:p-4 shadow-2xl">
@@ -183,11 +199,6 @@
             </div>
         </div>
     </div>
-
-
-        
-
-    </main>
 
     <script>
         let betaInertial = 0.6;
@@ -511,14 +522,16 @@
             }
         };
     </script>
-<script>
-    if ('serviceWorker' in navigator) {
-        window.addEventListener('load', () => {
-            navigator.serviceWorker.register('./sw.js')
-                .then((reg) => console.log('ServiceWorker registered:', reg.scope))
-                .catch((err) => console.log('ServiceWorker registration failed:', err));
-        });
-    }
-</script>    
+
+    <!-- Service Worker Registration -->
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('./sw.js')
+                    .then((reg) => console.log('ServiceWorker registered:', reg.scope))
+                    .catch((err) => console.log('ServiceWorker registration failed:', err));
+            });
+        }
+    </script>
 </body>
 </html>
