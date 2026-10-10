@@ -63,14 +63,18 @@
             overflow-x: hidden;
             overflow-y: auto;
             -webkit-overflow-scrolling: touch;
-            touch-action: pan-y; /* Crucial for Chrome and PWA standalone app mode */
+            touch-action: pan-y;
         }
         .font-mono { font-family: 'JetBrains Mono', monospace; }
         ::-webkit-scrollbar { width: 4px; height: 4px; }
         ::-webkit-scrollbar-track { background: #0f172a; }
         ::-webkit-scrollbar-thumb { background: #334155; border-radius: 2px; }
         input[type="range"] { touch-action: pan-x; }
-        canvas, .viewport-container, main { touch-action: pan-y; } 
+        canvas { 
+            pointer-events: none; /* Allows touch and scroll gestures to pass straight through the canvas on Android/Chrome */
+            touch-action: pan-y; 
+        }
+        .viewport-container, main { touch-action: pan-y; } 
     </style>
 </head>
 <body class="bg-slate-950 text-slate-100 min-h-screen w-full flex flex-col antialiased selection:bg-cyan-500 selection:text-white">
@@ -113,7 +117,7 @@
 
             <!-- Canvas Element -->
             <div class="flex-1 w-full h-full relative">
-                <canvas id="minkowskiCanvas1" class="w-full h-full block cursor-crosshair"></canvas>
+                <canvas id="minkowskiCanvas1" class="w-full h-full block"></canvas>
             </div>
 
             <!-- Event Horizon Legend Overlay -->
@@ -140,7 +144,7 @@
 
             <!-- Canvas Element -->
             <div class="flex-1 w-full h-full relative">
-                <canvas id="minkowskiCanvas2" class="w-full h-full block cursor-crosshair"></canvas>
+                <canvas id="minkowskiCanvas2" class="w-full h-full block"></canvas>
             </div>
 
             <!-- Color Coding Legend Overlay -->
