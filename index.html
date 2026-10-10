@@ -24,14 +24,15 @@
     <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
     <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
     <style>
-        body {
+        html, body {
             background-color: #090d16;
             color: #f8fafc;
             font-family: system-ui, -apple-system, sans-serif;
-            overflow-y: auto !important; /* Ensure vertical scrolling is always enabled */
+            overflow-y: auto !important;
+            height: auto !important;
         }
         canvas {
-            touch-action: pan-y; /* Allows smooth touch scrolling over canvases on mobile */
+            touch-action: pan-y; /* Permits smooth vertical touch scrolling over canvases on mobile */
         }
         input[type="range"] {
             accent-color: #38bdf8;
@@ -254,7 +255,7 @@
             ctx.stroke();
             ctx.setLineDash([]);
 
-            // Rindler Hyperbola
+            // Extended Rindler Hyperbola
             ctx.strokeStyle = '#ec4899';
             ctx.lineWidth = 2.5;
             ctx.beginPath();
