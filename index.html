@@ -63,13 +63,14 @@
             overflow-x: hidden;
             overflow-y: auto;
             -webkit-overflow-scrolling: touch;
+            touch-action: pan-y; /* Crucial for Chrome and PWA standalone app mode */
         }
         .font-mono { font-family: 'JetBrains Mono', monospace; }
         ::-webkit-scrollbar { width: 4px; height: 4px; }
         ::-webkit-scrollbar-track { background: #0f172a; }
         ::-webkit-scrollbar-thumb { background: #334155; border-radius: 2px; }
         input[type="range"] { touch-action: pan-x; }
-        canvas, .viewport-container { touch-action: pan-y; } /* Ensures Chrome allows vertical scrolling over viewports */
+        canvas, .viewport-container, main { touch-action: pan-y; } 
     </style>
 </head>
 <body class="bg-slate-950 text-slate-100 min-h-screen w-full flex flex-col antialiased selection:bg-cyan-500 selection:text-white">
@@ -243,7 +244,7 @@
             const oy = height / 2;
             const scale = Math.min(width, height) / 12;
 
-            // Cartesian grid (Increased visibility with slate-700 #334155)
+            // Cartesian grid
             ctx.strokeStyle = '#334155';
             ctx.lineWidth = 1.1;
             for (let i = -6; i <= 6; i++) {
@@ -411,7 +412,7 @@
 
             const gamma = 1.0 / Math.sqrt(Math.max(0.0001, 1.0 - betaInertial * betaInertial));
 
-            // Boosted Grid lines (Increased visibility with slate-400 equivalent opacity)
+            // Boosted Grid lines
             ctx.strokeStyle = 'rgba(148, 163, 184, 0.45)';
             ctx.lineWidth = 1.1;
             for (let i = -6; i <= 6; i++) {
