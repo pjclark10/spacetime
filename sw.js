@@ -1,4 +1,4 @@
-const CACHE_NAME = 'spacetime-v8';
+const CACHE_NAME = 'spacetime-v9';
 const urlsToCache = [
   './',
   './index.html',
