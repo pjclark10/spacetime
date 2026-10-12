@@ -540,6 +540,34 @@
                 window.MathJax.typesetPromise().catch((err) => console.log('MathJax error:', err));
             }
         };
+    function checkIOSInstallPrompt() {
+    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+    const isStandalone = window.navigator.standalone || window.matchMedia('(display-mode: standalone)').matches;
+    const dismissed = localStorage.getItem('ios_prompt_dismissed');
+
+    // Show banner only if on iOS, not installed yet, and user hasn't dismissed it
+    if (isIOS && !isStandalone && !dismissed) {
+        const banner = document.getElementById('ios-install-banner');
+        if (banner) {
+            banner.classList.remove('hidden');
+        }
+    }
+}
+
+function dismissIOSPrompt() {
+    const banner = document.getElementById('ios-install-banner');
+    if (banner) {
+        banner.classList.add('hidden');
+    }
+    localStorage.setItem('ios_prompt_dismissed', 'true');
+}
+
+// Trigger on load alongside your other init code
+window.addEventListener('load', () => {
+    updateSimulation();
+    checkIOSInstallPrompt(); // <-- Add this here
+    // ... rest of your load logic
+});    
     </script>
 
     <!-- Service Worker Registration -->
