@@ -1,5 +1,5 @@
 {
-"id": "/spacetime/",
+  "id": "/spacetime/",
   "name": "Minkowski Spacetime Simulator",
   "short_name": "Spacetime",
   "description": "Interactive Minkowski Spacetime & Relativistic Kinematics Simulator",
@@ -24,3 +24,4 @@
     }
   ]
 }
+
