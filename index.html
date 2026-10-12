@@ -540,12 +540,15 @@
                 window.MathJax.typesetPromise().catch((err) => console.log('MathJax error:', err));
             }
         };
-    function checkIOSInstallPrompt() {
-    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+function checkIOSInstallPrompt() {
+    // Detects iPhone/iPod OR modern iPads reporting as Mac desktop with touch support
+    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) || 
+                  (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+    
     const isStandalone = window.navigator.standalone || window.matchMedia('(display-mode: standalone)').matches;
     const dismissed = localStorage.getItem('ios_prompt_dismissed');
 
-    // Show banner only if on iOS, not installed yet, and user hasn't dismissed it
+    // Show banner only if on iOS/iPadOS, not installed yet, and not dismissed
     if (isIOS && !isStandalone && !dismissed) {
         const banner = document.getElementById('ios-install-banner');
         if (banner) {
