@@ -2,7 +2,7 @@
   "name": "Minkowski Spacetime Simulator",
   "short_name": "Spacetime",
   "description": "Interactive Minkowski Spacetime & Relativistic Kinematics Simulator",
-  "start_url": "/",
+  "start_url": "spacetime",
   "display": "standalone",
   "orientation": "any",
   "background_color": "#090d16",
