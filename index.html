@@ -85,6 +85,10 @@
         ::-webkit-scrollbar { width: 4px; height: 4px; }
         ::-webkit-scrollbar-track { background: #0f172a; }
         ::-webkit-scrollbar-thumb { background: #334155; border-radius: 2px; }
+        input[type="range"] { 
+        touch-action: none; 
+        -webkit-tap-highlight-color: transparent;
+        }
         input[type="range"] { touch-action: pan-x; }
         canvas { pointer-events: none; } /* Allows touch to pass through canvases for smooth scrolling */
     </style>
