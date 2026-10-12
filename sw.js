@@ -1,4 +1,4 @@
-const CACHE_NAME = 'spacetime-v9';
+const CACHE_NAME = 'spacetime-v11';
 const urlsToCache = [
   './',
   './index.html',
@@ -9,9 +9,17 @@ const urlsToCache = [
 
 self.addEventListener('install', (event) => {
   event.waitUntil(
-    caches.open(CACHE_NAME)
-      .then((cache) => cache.addAll(urlsToCache))
-      .then(() => self.skipWaiting())
+    caches.open(CACHE_NAME).then((cache) => {
+      return Promise.allSettled(
+        urlsToCache.map((url) =>
+          fetch(url).then((response) => {
+            if (response.ok) {
+              return cache.put(url, response);
+            }
+          })
+        )
+      );
+    }).then(() => self.skipWaiting())
   );
 });
 
@@ -29,10 +37,10 @@ self.addEventListener('activate', (event) => {
   );
 });
 
-// CRITICAL: Chrome requires a fetch handler for PWA installability
 self.addEventListener('fetch', (event) => {
   event.respondWith(
-    caches.match(event.request)
-      .then((response) => response || fetch(event.request))
+    caches.match(event.request).then((response) => {
+      return response || fetch(event.request);
+    })
   );
 });
