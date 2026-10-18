@@ -7,7 +7,7 @@ const ASSETS = [
     '/spacetime/icon-512.png'
 ];
 
-// Install Event
+// Install Event: Save files to cache
 self.addEventListener('install', (event) => {
     event.waitUntil(
         caches.open(CACHE_NAME).then((cache) => {
