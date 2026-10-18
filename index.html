@@ -3,19 +3,20 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Minkowski Spacetime Simulator</title>
+
     <!-- iOS PWA Meta Tags -->
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="Spacetime">
-    <!-- Apple Touch Icon (Must be a PNG, ideally 180x180 or 192x192) -->
     <link rel="apple-touch-icon" href="icon-192.png">
-    
-    <title>Minkowski Spacetime Simulator</title>
     
     <!-- PWA & Theme Configuration -->
     <link rel="manifest" href="/spacetime/manifest.json">
     <meta name="theme-color" content="#020617">
 
+    <!-- Fonts & Styling -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {
@@ -23,51 +24,27 @@
             theme: {
                 extend: {
                     colors: {
-                        slate: {
-                            950: '#020617',
-                            900: '#0f172a',
-                            850: '#0b1329',
-                            800: '#1e293b',
-                            700: '#334155'
-                        },
-                        velocityColor: {
-                            500: '#06b6d4',
-                            400: '#22d3ee',
-                        },
-                        accelColor: {
-                            500: '#f97316',
-                            400: '#fb923c',
-                        },
-                        horizonColor: {
-                            500: '#ec4899',
-                            400: '#f472b6',
-                        },
-                        spaceAxisColor: {
-                            500: '#8b5cf6',
-                            400: '#a78bfa',
-                        },
-                        lightConeColor: {
-                            500: '#eab308',
-                            400: '#facc15'
-                        }
+                        slate: { 950: '#020617', 900: '#0f172a', 850: '#0b1329', 800: '#1e293b', 700: '#334155' },
+                        velocityColor: { 500: '#06b6d4', 400: '#22d3ee' },
+                        accelColor: { 500: '#f97316', 400: '#fb923c' },
+                        horizonColor: { 500: '#ec4899', 400: '#f472b6' },
+                        spaceAxisColor: { 500: '#8b5cf6', 400: '#a78bfa' },
+                        lightConeColor: { 500: '#eab308', 400: '#facc15' }
                     }
                 }
             }
         }
     </script>
+
+    <!-- MathJax -->
     <script>
         window.MathJax = {
-            tex: {
-                inlineMath: [['$', '$'], ['\\(', '\\)']],
-                displayMath: [['$$', '$$'], ['[', ']']]
-            },
-            startup: {
-                typeset: true
-            }
+            tex: { inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [['$$', '$$'], ['[', ']']] },
+            startup: { typeset: true }
         };
     </script>
     <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js" async></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+
     <style>
         html, body { 
             font-family: 'Inter', sans-serif; 
@@ -76,25 +53,21 @@
             color: #f8fafc;
             min-height: 100vh;
             overflow-x: hidden;
-            overflow-y: auto; /* Enables native natural body scrolling for Android / Chrome / PWA */
+            overflow-y: auto;
             touch-action: pan-y;
-            margin: 0;
-            padding: 0;
+            margin: 0; padding: 0;
         }
         .font-mono { font-family: 'JetBrains Mono', monospace; }
         ::-webkit-scrollbar { width: 4px; height: 4px; }
         ::-webkit-scrollbar-track { background: #0f172a; }
         ::-webkit-scrollbar-thumb { background: #334155; border-radius: 2px; }
-        input[type="range"] { 
-        touch-action: none; 
-        -webkit-tap-highlight-color: transparent;
-        }
-        input[type="range"] { touch-action: pan-x; }
-        canvas { pointer-events: none; } /* Allows touch to pass through canvases for smooth scrolling */
+        input[type="range"] { touch-action: pan-x; -webkit-tap-highlight-color: transparent; }
+        canvas { pointer-events: none; }
     </style>
 </head>
 <body class="flex flex-col antialiased selection:bg-cyan-500 selection:text-white">
 
+    <!-- Header -->
     <header class="bg-slate-900/90 backdrop-blur-md border-b border-slate-800 shrink-0 h-14 flex items-center justify-between px-4 z-40 sticky top-0">
         <div class="flex items-center space-x-3">
             <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-velocityColor-500 to-accelColor-500 flex items-center justify-center shadow-lg shadow-cyan-500/10">
@@ -108,7 +81,6 @@
             </div>
         </div>
 
-        <!-- Telemetry Summary Badge -->
         <div class="hidden sm:flex items-center space-x-3 bg-slate-950/60 px-3 py-1 rounded-lg border border-slate-800 text-[11px] font-mono">
             <div><span class="text-slate-400">γ:</span> <span id="badge-gamma" class="text-cyan-400 font-bold">1.250</span></div>
             <span class="text-slate-700">|</span>
@@ -116,28 +88,20 @@
         </div>
     </header>
 
-    <!-- Main Container with generous bottom padding (pb-44) so content isn't covered by the floating panel -->
+    <!-- Main Viewports -->
     <main class="w-full max-w-7xl mx-auto flex flex-col md:grid md:grid-cols-2 gap-4 p-3 md:p-6 pb-44">
-        
-        <!-- Laboratory Frame (S) Viewport -->
+        <!-- Laboratory Frame (S) -->
         <div class="relative bg-slate-900 rounded-2xl border border-slate-800 overflow-hidden flex flex-col shadow-2xl h-[400px] sm:h-[480px]">
-            <!-- Canvas Header Bar -->
             <div class="absolute top-2 left-2 right-2 z-10 flex items-center justify-between pointer-events-none">
                 <div class="bg-slate-900/85 backdrop-blur-md px-3 py-1.5 rounded-xl border border-slate-800 text-xs font-medium flex items-center space-x-2 pointer-events-auto shadow-lg">
                     <span class="w-2.5 h-2.5 rounded-full bg-lightConeColor-500 shadow-sm shadow-yellow-500"></span>
                     <span>Laboratory Frame ($S$)</span>
                 </div>
-                <div class="bg-slate-900/85 backdrop-blur-md px-2.5 py-1.5 rounded-xl border border-slate-800 text-[10px] font-mono text-slate-300 pointer-events-auto hidden sm:block">
-                    Cartesian $(ct, x)$
-                </div>
+                <div class="bg-slate-900/85 backdrop-blur-md px-2.5 py-1.5 rounded-xl border border-slate-800 text-[10px] font-mono text-slate-300 pointer-events-auto hidden sm:block">Cartesian $(ct, x)$</div>
             </div>
-
-            <!-- Canvas Element -->
             <div class="flex-1 w-full h-full relative">
                 <canvas id="minkowskiCanvas1" class="w-full h-full block"></canvas>
             </div>
-
-            <!-- Event Horizon Legend Overlay -->
             <div class="absolute bottom-2 left-2 right-2 z-10 flex items-center justify-between pointer-events-none">
                 <div class="bg-slate-900/85 backdrop-blur-md px-2.5 py-1 rounded-lg border border-slate-800 text-[10px] font-mono text-slate-300 flex items-center space-x-1.5 pointer-events-auto">
                     <span class="w-2 h-2 rounded-full bg-horizonColor-500 shrink-0"></span>
@@ -146,25 +110,18 @@
             </div>
         </div>
 
-        <!-- Boosted Frame (S') Viewport -->
+        <!-- Boosted Frame (S') -->
         <div class="relative bg-slate-900 rounded-2xl border border-slate-800 overflow-hidden flex flex-col shadow-2xl h-[400px] sm:h-[480px]">
-            <!-- Canvas Header Bar -->
             <div class="absolute top-2 left-2 right-2 z-10 flex items-center justify-between pointer-events-none">
                 <div class="bg-slate-900/85 backdrop-blur-md px-3 py-1.5 rounded-xl border border-slate-800 text-xs font-medium flex items-center space-x-2 pointer-events-auto shadow-lg">
                     <span class="w-2.5 h-2.5 rounded-full bg-spaceAxisColor-500 shadow-sm shadow-violet-500"></span>
                     <span>Boosted Frame ($S'$)</span>
                 </div>
-                <div class="bg-slate-900/85 backdrop-blur-md px-2.5 py-1.5 rounded-xl border border-slate-800 text-[10px] font-mono text-slate-300 pointer-events-auto hidden sm:block">
-                    Skewed $(ct', x')$
-                </div>
+                <div class="bg-slate-900/85 backdrop-blur-md px-2.5 py-1.5 rounded-xl border border-slate-800 text-[10px] font-mono text-slate-300 pointer-events-auto hidden sm:block">Skewed $(ct', x')$</div>
             </div>
-
-            <!-- Canvas Element -->
             <div class="flex-1 w-full h-full relative">
                 <canvas id="minkowskiCanvas2" class="w-full h-full block"></canvas>
             </div>
-
-            <!-- Color Coding Legend Overlay -->
             <div class="absolute bottom-2 left-2 right-2 z-10 flex items-center justify-between pointer-events-none">
                 <div class="bg-slate-900/85 backdrop-blur-md px-2.5 py-1 rounded-lg border border-slate-800 text-[10px] font-mono text-slate-300 flex items-center space-x-2 pointer-events-auto">
                     <span class="flex items-center space-x-1"><span class="w-2 h-2 rounded-full bg-velocityColor-400"></span><span class="text-velocityColor-400 font-semibold">ct'</span></span>
@@ -173,10 +130,9 @@
                 </div>
             </div>
         </div>
-
     </main>
 
-    <!-- Floating Glassmorphism Controls Panel -->
+    <!-- Floating Controls Panel -->
     <div class="fixed bottom-4 left-1/2 -translate-x-1/2 z-30 w-[94%] max-w-2xl bg-slate-900/90 backdrop-blur-md border border-slate-800 rounded-2xl p-3 sm:p-4 shadow-2xl">
         <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
             <!-- Velocity Slider -->
@@ -185,8 +141,7 @@
                     <label for="beta-slider" class="text-slate-300 font-medium">Velocity ($\beta$)</label>
                     <span id="beta-val" class="font-mono text-velocityColor-400 font-bold">0.60</span>
                 </div>
-                <input id="beta-slider" type="range" min="-0.99" max="0.99" step="0.01" value="0.60" oninput="updateSimulation()"
-                       class="w-full accent-cyan-500 bg-slate-800 h-1.5 rounded-lg cursor-pointer">
+                <input id="beta-slider" type="range" min="-0.99" max="0.99" step="0.01" value="0.60" oninput="updateSimulation()" class="w-full accent-cyan-500 bg-slate-800 h-1.5 rounded-lg cursor-pointer">
             </div>
 
             <!-- Proper Acceleration Slider -->
@@ -195,8 +150,7 @@
                     <label for="accel-slider" class="text-slate-300 font-medium">Proper Accel ($g$)</label>
                     <span id="accel-val" class="font-mono text-accelColor-400 font-bold">1.00</span>
                 </div>
-                <input id="accel-slider" type="range" min="0.1" max="3.0" step="0.05" value="1.0" oninput="updateSimulation()"
-                       class="w-full accent-orange-500 bg-slate-800 h-1.5 rounded-lg cursor-pointer">
+                <input id="accel-slider" type="range" min="0.1" max="3.0" step="0.05" value="1.0" oninput="updateSimulation()" class="w-full accent-orange-500 bg-slate-800 h-1.5 rounded-lg cursor-pointer">
             </div>
 
             <!-- Time Parameter Slider -->
@@ -205,32 +159,27 @@
                     <label for="time-slider" class="text-slate-300 font-medium">Time ($t$)</label>
                     <span id="time-val" class="font-mono text-purple-400 font-bold">1.50</span>
                 </div>
-                <input id="time-slider" type="range" min="-5.0" max="5.0" step="0.1" value="1.5" oninput="updateSimulation()"
-                       class="w-full accent-purple-500 bg-slate-800 h-1.5 rounded-lg cursor-pointer">
+                <input id="time-slider" type="range" min="-5.0" max="5.0" step="0.1" value="1.5" oninput="updateSimulation()" class="w-full accent-purple-500 bg-slate-800 h-1.5 rounded-lg cursor-pointer">
             </div>
         </div>
     </div>
 
-    <!-- iOS Install Helper Banner (Appears only on iPhone/iPad if not installed) -->
+    <!-- iOS Install Helper Banner -->
     <div id="ios-install-banner" class="hidden fixed bottom-24 left-1/2 -translate-x-1/2 z-50 w-[94%] max-w-2xl bg-slate-900/95 backdrop-blur-md border border-cyan-500/40 rounded-2xl p-3 sm:p-4 shadow-2xl flex items-center justify-between text-xs sm:text-sm">
         <div class="flex items-center space-x-3">
-            <div class="w-10 h-10 rounded-xl bg-cyan-500/20 flex items-center justify-center text-cyan-400 shrink-0 font-bold text-lg">
-                ⚡
-            </div>
+            <div class="w-10 h-10 rounded-xl bg-cyan-500/20 flex items-center justify-center text-cyan-400 shrink-0 font-bold text-lg">⚡</div>
             <div>
                 <p class="font-semibold text-white">Install Spacetime Suite</p>
                 <p class="text-slate-300 text-[11px]">Tap <span class="text-cyan-400 font-bold">Share</span> ⎋ then <span class="text-white font-bold">"Add to Home Screen"</span></p>
             </div>
         </div>
-        <button onclick="dismissIOSPrompt()" class="text-slate-400 hover:text-white px-2 py-1 text-base font-bold">×</button>
+        <button onclick="dismissPrompt('ios')" class="text-slate-400 hover:text-white px-2 py-1 text-base font-bold">×</button>
     </div>
 
-    <!-- Android Install Helper Banner (Appears via beforeinstallprompt) -->
+    <!-- Android Install Helper Banner -->
     <div id="android-install-banner" class="hidden fixed bottom-24 left-1/2 -translate-x-1/2 z-50 w-[94%] max-w-2xl bg-slate-900/95 backdrop-blur-md border border-cyan-500/40 rounded-2xl p-3 sm:p-4 shadow-2xl flex items-center justify-between text-xs sm:text-sm">
         <div class="flex items-center space-x-3">
-            <div class="w-10 h-10 rounded-xl bg-cyan-500/20 flex items-center justify-center text-cyan-400 shrink-0 font-bold text-lg">
-                ⚡
-            </div>
+            <div class="w-10 h-10 rounded-xl bg-cyan-500/20 flex items-center justify-center text-cyan-400 shrink-0 font-bold text-lg">⚡</div>
             <div>
                 <p class="font-semibold text-white">Install Spacetime Suite</p>
                 <p class="text-slate-300 text-[11px]">Install app for a native full-screen experience</p>
@@ -238,14 +187,13 @@
         </div>
         <div class="flex items-center space-x-2">
             <button onclick="installAndroidApp()" class="bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-bold px-3 py-1.5 rounded-xl text-xs transition">Install</button>
-            <button onclick="dismissAndroidPrompt()" class="text-slate-400 hover:text-white px-2 py-1 text-base font-bold">×</button>
+            <button onclick="dismissPrompt('android')" class="text-slate-400 hover:text-white px-2 py-1 text-base font-bold">×</button>
         </div>
     </div>
 
+    <!-- Application Script -->
     <script>
-        let betaInertial = 0.6;
-        let accel = 1.0;
-        let timeParam = 1.5;
+        let betaInertial = 0.6, accel = 1.0, timeParam = 1.5, deferredPrompt = null;
 
         function updateSimulation() {
             betaInertial = parseFloat(document.getElementById('beta-slider').value);
@@ -257,9 +205,7 @@
             document.getElementById('time-val').innerText = timeParam.toFixed(2);
 
             const gamma = 1.0 / Math.sqrt(Math.max(0.0001, 1.0 - betaInertial * betaInertial));
-            const u0 = gamma;
-            const u1 = gamma * betaInertial;
-
+            const u0 = gamma, u1 = gamma * betaInertial;
             const a0 = accel > 0 ? accel * gamma * gamma * betaInertial : 0;
             const a1 = accel > 0 ? accel * gamma * gamma : 0;
             const dotProduct = -u0 * a0 + u1 * a1;
@@ -267,7 +213,8 @@
             document.getElementById('badge-gamma').innerText = gamma.toFixed(3);
             document.getElementById('badge-dot').innerText = dotProduct.toFixed(4);
 
-            renderCanvases();
+            renderCanvas1();
+            renderCanvas2();
         }
 
         function setupCanvas(canvasId) {
@@ -275,156 +222,95 @@
             const ctx = canvas.getContext('2d');
             const dpr = window.devicePixelRatio || 1;
             const rect = canvas.getBoundingClientRect();
-            
             canvas.width = rect.width * dpr;
             canvas.height = rect.height * dpr;
             ctx.scale(dpr, dpr);
-            
             return { ctx, width: rect.width, height: rect.height };
-        }
-
-        function renderCanvases() {
-            renderCanvas1();
-            renderCanvas2();
         }
 
         function renderCanvas1() {
             const { ctx, width, height } = setupCanvas('minkowskiCanvas1');
             ctx.clearRect(0, 0, width, height);
 
-            const ox = width / 2;
-            const oy = height / 2;
-            const scale = Math.min(width, height) / 12;
+            const ox = width / 2, oy = height / 2, scale = Math.min(width, height) / 12;
 
             // Cartesian grid
             ctx.strokeStyle = '#334155';
             ctx.lineWidth = 1.1;
             for (let i = -6; i <= 6; i++) {
-                ctx.beginPath();
-                ctx.moveTo(ox + i * scale, 0);
-                ctx.lineTo(ox + i * scale, height);
-                ctx.stroke();
-                ctx.beginPath();
-                ctx.moveTo(0, oy - i * scale);
-                ctx.lineTo(width, oy - i * scale);
-                ctx.stroke();
+                ctx.beginPath(); ctx.moveTo(ox + i * scale, 0); ctx.lineTo(ox + i * scale, height); ctx.stroke();
+                ctx.beginPath(); ctx.moveTo(0, oy - i * scale); ctx.lineTo(width, oy - i * scale); ctx.stroke();
             }
 
-            // Dashed Yellow Light Cones
-            ctx.strokeStyle = '#eab308';
-            ctx.lineWidth = 2.5;
-            ctx.setLineDash([6, 4]);
+            // Light Cones
+            ctx.strokeStyle = '#eab308'; ctx.lineWidth = 2.5; ctx.setLineDash([6, 4]);
             ctx.beginPath();
-            ctx.moveTo(ox - scale * 6, oy + scale * 6);
-            ctx.lineTo(ox + scale * 6, oy - scale * 6);
-            ctx.moveTo(ox - scale * 6, oy - scale * 6);
-            ctx.lineTo(ox + scale * 6, oy + scale * 6);
-            ctx.stroke();
-            ctx.setLineDash([]);
+            ctx.moveTo(ox - scale * 6, oy + scale * 6); ctx.lineTo(ox + scale * 6, oy - scale * 6);
+            ctx.moveTo(ox - scale * 6, oy - scale * 6); ctx.lineTo(ox + scale * 6, oy + scale * 6);
+            ctx.stroke(); ctx.setLineDash([]);
 
-            // Neutral Lab Axes (ct, x)
-            ctx.strokeStyle = '#64748b';
-            ctx.lineWidth = 1.5;
-            ctx.beginPath();
-            ctx.moveTo(ox, height);
-            ctx.lineTo(ox, 0);
-            ctx.stroke();
-            ctx.beginPath();
-            ctx.moveTo(0, oy);
-            ctx.lineTo(width, oy);
-            ctx.stroke();
+            // Lab Axes
+            ctx.strokeStyle = '#64748b'; ctx.lineWidth = 1.5;
+            ctx.beginPath(); ctx.moveTo(ox, height); ctx.lineTo(ox, 0); ctx.stroke();
+            ctx.beginPath(); ctx.moveTo(0, oy); ctx.lineTo(width, oy); ctx.stroke();
 
-            ctx.fillStyle = '#94a3b8';
-            ctx.font = '11px JetBrains Mono, monospace';
-            ctx.fillText('ct', ox + 8, 20);
-            ctx.fillText('x', width - 20, oy - 8);
+            ctx.fillStyle = '#94a3b8'; ctx.font = '11px JetBrains Mono, monospace';
+            ctx.fillText('ct', ox + 8, 20); ctx.fillText('x', width - 20, oy - 8);
 
-            // Dashed Magenta Event Horizon (x = ct - rho, where rho = 1/g)
-            ctx.strokeStyle = '#ec4899';
-            ctx.lineWidth = 2;
-            ctx.setLineDash([5, 5]);
+            // Event Horizon
+            ctx.strokeStyle = '#ec4899'; ctx.lineWidth = 2; ctx.setLineDash([5, 5]);
             ctx.beginPath();
-            const rho = 1.0 / accel;
-            const horizonOffset = scale * rho;
-            ctx.moveTo(0, oy + ox - horizonOffset);
-            ctx.lineTo(width, oy + ox - width - horizonOffset);
-            ctx.stroke();
-            ctx.setLineDash([]);
+            const horizonOffset = scale * (1.0 / accel);
+            ctx.moveTo(0, oy + ox - horizonOffset); ctx.lineTo(width, oy + ox - width - horizonOffset);
+            ctx.stroke(); ctx.setLineDash([]);
 
-            // Uniform Motion Worldline (Cyan)
-            ctx.strokeStyle = '#06b6d4';
-            ctx.lineWidth = 3;
-            ctx.beginPath();
+            // Uniform Motion Worldline
+            ctx.strokeStyle = '#06b6d4'; ctx.lineWidth = 3; ctx.beginPath();
             let firstBeta = true;
             for (let t = -6; t <= 6; t += 0.05) {
-                const xInertial = betaInertial * t;
-                const px = ox + xInertial * scale;
-                const py = oy - t * scale;
-                if (firstBeta) { ctx.moveTo(px, py); firstBeta = false; }
-                else { ctx.lineTo(px, py); }
+                const px = ox + (betaInertial * t) * scale, py = oy - t * scale;
+                if (firstBeta) { ctx.moveTo(px, py); firstBeta = false; } else { ctx.lineTo(px, py); }
             }
             ctx.stroke();
 
-            const currXInertial = betaInertial * timeParam;
-            const currTPx = ox + currXInertial * scale;
+            const currTPx = ox + (betaInertial * timeParam) * scale;
             const currTPy = oy - timeParam * scale;
+            ctx.fillStyle = '#22d3ee'; ctx.beginPath(); ctx.arc(currTPx, currTPy, 5, 0, 2 * Math.PI); ctx.fill();
 
-            ctx.fillStyle = '#22d3ee';
-            ctx.beginPath();
-            ctx.arc(currTPx, currTPy, 5, 0, 2 * Math.PI);
-            ctx.fill();
-
-            // Extended Hyperbolic Proper Acceleration Worldline (Orange)
+            // Accelerated Worldline
             let hypPx = 0, hypPy = 0;
             if (accel > 0) {
-                ctx.strokeStyle = '#f97316';
-                ctx.lineWidth = 3;
-                ctx.beginPath();
+                ctx.strokeStyle = '#f97316'; ctx.lineWidth = 3; ctx.beginPath();
                 let firstHyp = true;
                 for (let t = -7; t <= 7; t += 0.01) {
-                    const sign = t >= 0 ? 1 : -1;
                     const tAbs = Math.abs(t);
-                    const xHyp = sign * (1.0 / accel) * (Math.sqrt(1.0 + accel * accel * tAbs * tAbs) - 1.0);
-                    const px = ox + xHyp * scale;
-                    const py = oy - t * scale;
-                    if (firstHyp) { ctx.moveTo(px, py); firstHyp = false; }
-                    else { ctx.lineTo(px, py); }
+                    const xHyp = (t >= 0 ? 1 : -1) * (1.0 / accel) * (Math.sqrt(1.0 + accel * accel * tAbs * tAbs) - 1.0);
+                    const px = ox + xHyp * scale, py = oy - t * scale;
+                    if (firstHyp) { ctx.moveTo(px, py); firstHyp = false; } else { ctx.lineTo(px, py); }
                 }
                 ctx.stroke();
 
-                const signT = timeParam >= 0 ? 1 : -1;
                 const tParamAbs = Math.abs(timeParam);
-                const currXHyp = signT * (1.0 / accel) * (Math.sqrt(1.0 + accel * accel * tParamAbs * tParamAbs) - 1.0);
+                const currXHyp = (timeParam >= 0 ? 1 : -1) * (1.0 / accel) * (Math.sqrt(1.0 + accel * accel * tParamAbs * tParamAbs) - 1.0);
                 hypPx = ox + currXHyp * scale;
                 hypPy = oy - timeParam * scale;
 
-                ctx.fillStyle = '#fb923c';
-                ctx.beginPath();
-                ctx.arc(hypPx, hypPy, 5, 0, 2 * Math.PI);
-                ctx.fill();
+                ctx.fillStyle = '#fb923c'; ctx.beginPath(); ctx.arc(hypPx, hypPy, 5, 0, 2 * Math.PI); ctx.fill();
             }
 
-            // Vertically Offset Non-Colliding Legends
+            // Labels
             ctx.font = '10px JetBrains Mono, monospace';
             const dist = Math.hypot(currTPx - hypPx, currTPy - hypPy);
 
-            // Uniform Velocity Label
-            ctx.fillStyle = '#0f172a';
-            ctx.fillRect(currTPx + 8, currTPy - 16, 120, 18);
-            ctx.strokeStyle = '#06b6d4';
-            ctx.strokeRect(currTPx + 8, currTPy - 16, 120, 18);
-            ctx.fillStyle = '#22d3ee';
-            ctx.fillText(`Uniform (β=${betaInertial.toFixed(2)})`, currTPx + 12, currTPy - 3);
+            ctx.fillStyle = '#0f172a'; ctx.fillRect(currTPx + 8, currTPy - 16, 120, 18);
+            ctx.strokeStyle = '#06b6d4'; ctx.strokeRect(currTPx + 8, currTPy - 16, 120, 18);
+            ctx.fillStyle = '#22d3ee'; ctx.fillText(`Uniform (β=${betaInertial.toFixed(2)})`, currTPx + 12, currTPy - 3);
 
-            // Accelerated Label
             if (accel > 0) {
                 const yOffset = dist < 45 ? 20 : -16;
-                ctx.fillStyle = '#0f172a';
-                ctx.fillRect(hypPx + 8, hypPy + yOffset, 120, 18);
-                ctx.strokeStyle = '#f97316';
-                ctx.strokeRect(hypPx + 8, hypPy + yOffset, 120, 18);
-                ctx.fillStyle = '#fb923c';
-                ctx.fillText(`Accel (g=${accel.toFixed(2)})`, hypPx + 12, hypPy + yOffset + 13);
+                ctx.fillStyle = '#0f172a'; ctx.fillRect(hypPx + 8, hypPy + yOffset, 120, 18);
+                ctx.strokeStyle = '#f97316'; ctx.strokeRect(hypPx + 8, hypPy + yOffset, 120, 18);
+                ctx.fillStyle = '#fb923c'; ctx.fillText(`Accel (g=${accel.toFixed(2)})`, hypPx + 12, hypPy + yOffset + 13);
             }
         }
 
@@ -432,217 +318,92 @@
             const { ctx, width, height } = setupCanvas('minkowskiCanvas2');
             ctx.clearRect(0, 0, width, height);
 
-            const ox = width / 2;
-            const oy = height / 2;
-            const scale = Math.min(width, height) / 12;
+            const ox = width / 2, oy = height / 2, scale = Math.min(width, height) / 12;
 
-            // Dashed Yellow Light Cones
-            ctx.strokeStyle = '#eab308';
-            ctx.lineWidth = 2.5;
-            ctx.setLineDash([6, 4]);
+            // Light Cones
+            ctx.strokeStyle = '#eab308'; ctx.lineWidth = 2.5; ctx.setLineDash([6, 4]);
             ctx.beginPath();
-            ctx.moveTo(ox - scale * 6, oy + scale * 6);
-            ctx.lineTo(ox + scale * 6, oy - scale * 6);
-            ctx.moveTo(ox - scale * 6, oy - scale * 6);
-            ctx.lineTo(ox + scale * 6, oy + scale * 6);
-            ctx.stroke();
-            ctx.setLineDash([]);
+            ctx.moveTo(ox - scale * 6, oy + scale * 6); ctx.lineTo(ox + scale * 6, oy - scale * 6);
+            ctx.moveTo(ox - scale * 6, oy - scale * 6); ctx.lineTo(ox + scale * 6, oy + scale * 6);
+            ctx.stroke(); ctx.setLineDash([]);
 
-            // Neutral Lab Axes (dashed background reference)
-            ctx.strokeStyle = '#475569';
-            ctx.lineWidth = 1.2;
-            ctx.setLineDash([3, 3]);
-            ctx.beginPath();
-            ctx.moveTo(ox, height);
-            ctx.lineTo(ox, 0);
-            ctx.stroke();
-            ctx.beginPath();
-            ctx.moveTo(0, oy);
-            ctx.lineTo(width, oy);
-            ctx.stroke();
+            // Lab Reference Axes
+            ctx.strokeStyle = '#475569'; ctx.lineWidth = 1.2; ctx.setLineDash([3, 3]);
+            ctx.beginPath(); ctx.moveTo(ox, height); ctx.lineTo(ox, 0); ctx.stroke();
+            ctx.beginPath(); ctx.moveTo(0, oy); ctx.lineTo(width, oy); ctx.stroke();
             ctx.setLineDash([]);
 
             const gamma = 1.0 / Math.sqrt(Math.max(0.0001, 1.0 - betaInertial * betaInertial));
 
-            // Boosted Grid lines
-            ctx.strokeStyle = 'rgba(148, 163, 184, 0.45)';
-            ctx.lineWidth = 1.1;
+            // Boosted Grid
+            ctx.strokeStyle = 'rgba(148, 163, 184, 0.45)'; ctx.lineWidth = 1.1;
             for (let i = -6; i <= 6; i++) {
                 ctx.beginPath();
                 let first = true;
                 for (let ctp = -7; ctp <= 7; ctp += 0.2) {
-                    const ct = gamma * (ctp + betaInertial * i);
-                    const x = gamma * (i + betaInertial * ctp);
-                    const px = ox + x * scale;
-                    const py = oy - ct * scale;
-                    if (first) { ctx.moveTo(px, py); first = false; }
-                    else { ctx.lineTo(px, py); }
-                }
-                ctx.stroke();
-
-                ctx.beginPath();
-                first = true;
-                for (let xp = -7; xp <= 7; xp += 0.2) {
-                    const ct = gamma * (i + betaInertial * xp);
-                    const x = gamma * (xp + betaInertial * i);
-                    const px = ox + x * scale;
-                    const py = oy - ct * scale;
-                    if (first) { ctx.moveTo(px, py); first = false; }
-                    else { ctx.lineTo(px, py); }
+                    const px = ox + (gamma * (i + betaInertial * ctp)) * scale;
+                    const py = oy - (gamma * (ctp + betaInertial * i)) * scale;
+                    if (first) { ctx.moveTo(px, py); first = false; } else { ctx.lineTo(px, py); }
                 }
                 ctx.stroke();
             }
 
-            // ct' axis (Cyan matching velocity worldline)
-            ctx.strokeStyle = '#06b6d4';
-            ctx.lineWidth = 3;
-            ctx.beginPath();
-            let firstCtPrime = true;
+            // ct' and x' Axes
+            ctx.strokeStyle = '#06b6d4'; ctx.lineWidth = 3; ctx.beginPath();
             for (let ctp = -7; ctp <= 7; ctp += 0.1) {
-                const ct = gamma * ctp;
-                const x = gamma * betaInertial * ctp;
-                const px = ox + x * scale;
-                const py = oy - ct * scale;
-                if (firstCtPrime) { ctx.moveTo(px, py); firstCtPrime = false; }
-                else { ctx.lineTo(px, py); }
+                const px = ox + (gamma * betaInertial * ctp) * scale, py = oy - (gamma * ctp) * scale;
+                if (ctp === -7) ctx.moveTo(px, py); else ctx.lineTo(px, py);
             }
             ctx.stroke();
 
-            // x' axis (Violet)
-            ctx.strokeStyle = '#8b5cf6';
-            ctx.lineWidth = 3;
-            ctx.beginPath();
-            let firstXPrime = true;
+            ctx.strokeStyle = '#8b5cf6'; ctx.lineWidth = 3; ctx.beginPath();
             for (let xp = -7; xp <= 7; xp += 0.1) {
-                const ct = gamma * betaInertial * xp;
-                const x = gamma * xp;
-                const px = ox + x * scale;
-                const py = oy - ct * scale;
-                if (firstXPrime) { ctx.moveTo(px, py); firstXPrime = false; }
-                else { ctx.lineTo(px, py); }
+                const px = ox + (gamma * xp) * scale, py = oy - (gamma * betaInertial * xp) * scale;
+                if (xp === -7) ctx.moveTo(px, py); else ctx.lineTo(px, py);
             }
             ctx.stroke();
-
-            ctx.font = '11px JetBrains Mono, monospace';
-
-            // Clamped ct' Label
-            const topCt = gamma * 4.8;
-            const topX = gamma * betaInertial * 4.8;
-            let ctLabelX = ox + topX * scale + 8;
-            let ctLabelY = oy - topCt * scale;
-            ctLabelX = Math.max(10, Math.min(width - 65, ctLabelX));
-            ctLabelY = Math.max(25, Math.min(height - 15, ctLabelY));
-
-            ctx.fillStyle = '#0f172a';
-            ctx.fillRect(ctLabelX - 4, ctLabelY - 13, 56, 18);
-            ctx.strokeStyle = '#06b6d4';
-            ctx.strokeRect(ctLabelX - 4, ctLabelY - 13, 56, 18);
-            ctx.fillStyle = '#22d3ee';
-            ctx.fillText("ct' axis", ctLabelX, ctLabelY);
-
-            // Clamped x' Label
-            const rightCt = gamma * betaInertial * 4.8;
-            const rightX = gamma * 4.8;
-            let xLabelX = ox + rightX * scale + 8;
-            let xLabelY = oy - rightCt * scale;
-            xLabelX = Math.max(10, Math.min(width - 60, xLabelX));
-            xLabelY = Math.max(25, Math.min(height - 15, xLabelY));
-
-            ctx.fillStyle = '#0f172a';
-            ctx.fillRect(xLabelX - 4, xLabelY - 13, 52, 18);
-            ctx.strokeStyle = '#8b5cf6';
-            ctx.strokeRect(xLabelX - 4, xLabelY - 13, 52, 18);
-            ctx.fillStyle = '#c084fc';
-            ctx.fillText("x' axis", xLabelX, xLabelY);
         }
 
-        window.onload = function() {
-            updateSimulation();
-            window.addEventListener('resize', renderCanvases);
-            if (window.MathJax && window.MathJax.typesetPromise) {
-                window.MathJax.typesetPromise().catch((err) => console.log('MathJax error:', err));
-            }
-        };
-
-        // --- iOS Banner Logic ---
-        function checkIOSInstallPrompt() {
-            const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) || 
-                          (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
-            
-            const isStandalone = window.navigator.standalone || window.matchMedia('(display-mode: standalone)').matches;
-            const dismissed = localStorage.getItem('ios_prompt_dismissed');
-
-            if (isIOS && !isStandalone && !dismissed) {
-                const banner = document.getElementById('ios-install-banner');
-                if (banner) {
-                    banner.classList.remove('hidden');
-                }
-            }
+        // --- PWA Installation Logic ---
+        function dismissPrompt(type) {
+            document.getElementById(`${type}-install-banner`).classList.add('hidden');
+            localStorage.setItem(`${type}_prompt_dismissed`, 'true');
         }
-
-        function dismissIOSPrompt() {
-            const banner = document.getElementById('ios-install-banner');
-            if (banner) {
-                banner.classList.add('hidden');
-            }
-            localStorage.setItem('ios_prompt_dismissed', 'true');
-        }
-
-        // --- Android Banner Logic ---
-        let deferredPrompt = null;
 
         window.addEventListener('beforeinstallprompt', (e) => {
             e.preventDefault();
             deferredPrompt = e;
-            const androidBanner = document.getElementById('android-install-banner');
-            if (androidBanner && !localStorage.getItem('android_prompt_dismissed')) {
-                androidBanner.classList.remove('hidden');
+            if (!localStorage.getItem('android_prompt_dismissed')) {
+                document.getElementById('android-install-banner').classList.remove('hidden');
             }
         });
 
         function installAndroidApp() {
             if (!deferredPrompt) return;
-            // CRITICAL: Must be called synchronously inside user click
             deferredPrompt.prompt();
-            deferredPrompt.userChoice.then((choiceResult) => {
-                if (choiceResult.outcome === 'accepted') {
-                    console.log('User accepted the install prompt');
-                }
+            deferredPrompt.userChoice.then(() => {
                 deferredPrompt = null;
-                const androidBanner = document.getElementById('android-install-banner');
-                if (androidBanner) androidBanner.classList.add('hidden');
+                document.getElementById('android-install-banner').classList.add('hidden');
             });
         }
 
-        function dismissAndroidPrompt() {
-            const androidBanner = document.getElementById('android-install-banner');
-            if (androidBanner) androidBanner.classList.add('hidden');
-            localStorage.setItem('android_prompt_dismissed', 'true');
-        }
-
-        window.addEventListener('appinstalled', (evt) => {
-            console.log('Spacetime successfully installed!');
-            deferredPrompt = null;
-            const androidBanner = document.getElementById('android-install-banner');
-            if (androidBanner) androidBanner.classList.add('hidden');
-        });
-
-        // Trigger on load
         window.addEventListener('load', () => {
             updateSimulation();
-            checkIOSInstallPrompt();
-        });   
-    </script>
+            window.addEventListener('resize', () => { updateSimulation(); });
 
-    <!-- Service Worker Registration -->
-    <script>
-        if ('serviceWorker' in navigator) {
-    window.addEventListener('load', () => {
-        navigator.serviceWorker.register('/spacetime/sw.js', { scope: '/spacetime/' })
-            .then((reg) => console.log('ServiceWorker registered:', reg.scope))
-            .catch((err) => console.log('ServiceWorker registration failed:', err));
-    });
-}
+            // Check iOS
+            const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+            const isStandalone = window.navigator.standalone || window.matchMedia('(display-mode: standalone)').matches;
+            if (isIOS && !isStandalone && !localStorage.getItem('ios_prompt_dismissed')) {
+                document.getElementById('ios-install-banner').classList.remove('hidden');
+            }
+
+            // Service Worker
+            if ('serviceWorker' in navigator) {
+                navigator.serviceWorker.register('/spacetime/sw.js', { scope: '/spacetime/' })
+                    .catch((err) => console.log('ServiceWorker registration failed:', err));
+            }
+        });
     </script>
 </body>
 </html>
