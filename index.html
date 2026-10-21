@@ -109,7 +109,6 @@
                 </div>
             </div>
         </div>
-
         <!-- Boosted Frame (S') -->
         <div class="relative bg-slate-900 rounded-2xl border border-slate-800 overflow-hidden flex flex-col shadow-2xl h-[400px] sm:h-[480px]">
             <div class="absolute top-2 left-2 right-2 z-10 flex items-center justify-between pointer-events-none">
@@ -335,19 +334,33 @@
 
             const gamma = 1.0 / Math.sqrt(Math.max(0.0001, 1.0 - betaInertial * betaInertial));
 
-            // Boosted Grid
-            ctx.strokeStyle = 'rgba(148, 163, 184, 0.45)'; ctx.lineWidth = 1.1;
-            for (let i = -6; i <= 6; i++) {
+            // Boosted Grid (S' Frame)
+            ctx.strokeStyle = 'rgba(148, 163, 184, 0.45)'; 
+            ctx.lineWidth = 1.1;
+
+        // 1. Lines of constant x' (varying ctp)
+            for (let x_prime = -6; x_prime <= 6; x_prime++) {
                 ctx.beginPath();
                 let first = true;
                 for (let ctp = -7; ctp <= 7; ctp += 0.2) {
-                    const px = ox + (gamma * (i + betaInertial * ctp)) * scale;
-                    const py = oy - (gamma * (ctp + betaInertial * i)) * scale;
+                    const px = ox + (gamma * (x_prime + betaInertial * ctp)) * scale;
+                    const py = oy - (gamma * (ctp + betaInertial * x_prime)) * scale;
                     if (first) { ctx.moveTo(px, py); first = false; } else { ctx.lineTo(px, py); }
                 }
                 ctx.stroke();
             }
-
+    
+            // 2. Lines of constant ct' (varying x_prime) --- THIS WAS MISSING ---
+            for (let ct_prime = -6; ct_prime <= 6; ct_prime++) {
+                ctx.beginPath();
+                let first = true;
+                for (let xp = -7; xp <= 7; xp += 0.2) {
+                    const px = ox + (gamma * (xp + betaInertial * ct_prime)) * scale;
+                    const py = oy - (gamma * (ct_prime + betaInertial * xp)) * scale;
+                    if (first) { ctx.moveTo(px, py); first = false; } else { ctx.lineTo(px, py); }
+                }
+                ctx.stroke();
+            }
             // ct' and x' Axes
             ctx.strokeStyle = '#06b6d4'; ctx.lineWidth = 3; ctx.beginPath();
             for (let ctp = -7; ctp <= 7; ctp += 0.1) {
