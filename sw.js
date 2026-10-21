@@ -1,4 +1,4 @@
-const CACHE_NAME = 'spacetime-v15';
+const CACHE_NAME = 'spacetime-v16';
 const ASSETS = [
     '/spacetime/',
     '/spacetime/index.html',
