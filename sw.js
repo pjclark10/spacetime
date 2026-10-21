@@ -30,22 +30,32 @@ self.addEventListener('activate', (event) => {
         }).then(() => self.clients.claim())
     );
 });
-
 // Fetch Event
 self.addEventListener('fetch', (event) => {
     if (event.request.method !== 'GET') return;
 
+    // 1. For HTML / Navigation requests: Try network first so updates appear instantly
+    if (event.request.mode === 'navigate' || event.request.destination === 'document') {
+        event.respondWith(
+            fetch(event.request)
+                .then((networkResponse) => {
+                    return caches.open(CACHE_NAME).then((cache) => {
+                        cache.put(event.request, networkResponse.clone());
+                        return networkResponse;
+                    });
+                })
+                .catch(() => {
+                    // Fallback to cache if offline
+                    return caches.match(event.request) || caches.match('/spacetime/') || caches.match('/spacetime/index.html');
+                })
+        );
+        return;
+    }
+
+    // 2. For static assets (icons, manifest): Cache-First
     event.respondWith(
         caches.match(event.request).then((cachedResponse) => {
-            if (cachedResponse) {
-                return cachedResponse;
-            }
-            return fetch(event.request).catch((err) => {
-                // Return root cached index page as fallback for navigation requests
-                if (event.request.mode === 'navigate') {
-                    return caches.match('/spacetime/index.html') || caches.match('/spacetime/');
-                }
-            });
+            return cachedResponse || fetch(event.request);
         })
     );
 });
