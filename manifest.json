@@ -1,8 +1,8 @@
 {
   "id": "/spacetime/",
-  "name": "Minkowski Spacetime Simulator",
+  "name": "Spacetime & Curved Geometry Suite",
   "short_name": "Spacetime",
-  "description": "Interactive Minkowski Spacetime & Relativistic Kinematics Simulator",
+  "description": "Interactive Minkowski Spacetime, Relativistic Kinematics, & Curved Geometry Simulator",
   "start_url": "/spacetime/",
   "scope": "/spacetime/",
   "display": "standalone",
