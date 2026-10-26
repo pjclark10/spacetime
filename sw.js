@@ -1,10 +1,13 @@
-const CACHE_NAME = 'spacetime-v16';
+const CACHE_NAME = 'spacetime-v17';
 const ASSETS = [
     '/spacetime/',
     '/spacetime/index.html',
+    '/spacetime/minkowski.html', // ADD THIS LINE TO CACHE YOUR PHYSICAL PROPERTIES
     '/spacetime/manifest.json',
     '/spacetime/icon-192.png',
-    '/spacetime/icon-512.png'
+    '/spacetime/icon-512.png',
+    'https://cloudflare.com',
+    'https://jsdelivr.net'
 ];
 
 // Install Event: Save files to cache
