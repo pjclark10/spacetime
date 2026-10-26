@@ -1,422 +1,337 @@
 <!DOCTYPE html>
-<html lang="en" class="dark">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Minkowski Spacetime Simulator</title>
-
-    <!-- iOS PWA Meta Tags -->
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="Spacetime">
-    <link rel="apple-touch-icon" href="icon-192.png">
-    
-    <!-- PWA & Theme Configuration -->
-    <link rel="manifest" href="/spacetime/manifest.json">
-    <meta name="theme-color" content="#020617">
-
-    <!-- Fonts & Styling -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-        tailwind.config = {
-            darkMode: 'class',
-            theme: {
-                extend: {
-                    colors: {
-                        slate: { 950: '#020617', 900: '#0f172a', 850: '#0b1329', 800: '#1e293b', 700: '#334155' },
-                        velocityColor: { 500: '#06b6d4', 400: '#22d3ee' },
-                        accelColor: { 500: '#f97316', 400: '#fb923c' },
-                        horizonColor: { 500: '#ec4899', 400: '#f472b6' },
-                        spaceAxisColor: { 500: '#8b5cf6', 400: '#a78bfa' },
-                        lightConeColor: { 500: '#eab308', 400: '#facc15' }
-                    }
-                }
-            }
-        }
-    </script>
-
-    <!-- MathJax -->
-    <script>
-        window.MathJax = {
-            tex: { inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [['$$', '$$'], ['[', ']']] },
-            startup: { typeset: true }
-        };
-    </script>
-    <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js" async></script>
-
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Spacetime & Curved Geometry Suite</title>
     <style>
-        html, body { 
-            font-family: 'Inter', sans-serif; 
-            -webkit-tap-highlight-color: transparent;
-            background-color: #020617;
-            color: #f8fafc;
-            min-height: 100vh;
-            overflow-x: hidden;
-            overflow-y: auto;
-            touch-action: pan-y;
-            margin: 0; padding: 0;
+        /* Base Reset & Mobile-First Interface Rules */
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { 
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; 
+            background-color: #111111; 
+            color: #ffffff; 
+            overflow: hidden;
+            height: 100vh;
+            width: 100vw;
         }
-        .font-mono { font-family: 'JetBrains Mono', monospace; }
-        ::-webkit-scrollbar { width: 4px; height: 4px; }
-        ::-webkit-scrollbar-track { background: #0f172a; }
-        ::-webkit-scrollbar-thumb { background: #334155; border-radius: 2px; }
-        input[type="range"] { touch-action: pan-x; -webkit-tap-highlight-color: transparent; }
-        canvas { pointer-events: none; }
+
+        /* Top Mobile Dashboard Tab Switcher Header */
+        #app-header {
+            display: flex;
+            background: #161616;
+            border-bottom: 1px solid #2d2d2d;
+            height: 50px;
+            z-index: 1000;
+            position: relative;
+        }
+        .tab-button {
+            flex: 1;
+            background: none;
+            border: none;
+            color: #888888;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: color 0.2s, background-color 0.2s;
+            text-align: center;
+            line-height: 50px;
+        }
+        .tab-button.active {
+            color: #ffffff;
+            background-color: #1e1e1e;
+            border-bottom: 3px solid #007bff;
+            font-weight: 600;
+        }
+
+        /* Isolated Module Viewports */
+        .module-viewport {
+            display: none;
+            width: 100vw;
+            height: calc(100vh - 50px);
+            position: relative;
+            overflow: hidden;
+        }
+        .module-viewport.active {
+            display: block;
+        }
+
+        /* Safe Multi-Window Sandbox Layer */
+        iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+            background: #111111;
+        }
+
+        /* Spherical Geometry Viewport Container */
+        #spherical-container {
+            display: flex;
+            flex-direction: column;
+            width: 100%;
+            height: 100%;
+            position: relative;
+        }
+        #canvas3d {
+            flex: 1;
+            width: 100%;
+            height: 100%;
+            display: block;
+        }
+
+        /* On-Screen HUD Control Panels */
+        .hud-panel {
+            position: absolute;
+            background: rgba(20, 20, 20, 0.85);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 12px;
+            border-radius: 8px;
+            font-size: 12px;
+            z-index: 10;
+            max-width: 90vw;
+        }
+        #math-hud { top: 10px; left: 10px; width: 280px; }
+        #control-hud { bottom: 150px; right: 10px; width: 240px; }
+        #graph-hud {
+            bottom: 10px; left: 10px; right: 10px; height: 130px;
+            display: flex; flex-direction: column;
+        }
+
+        /* Typography & Parametric Sliders Layout */
+        h4 { margin-bottom: 6px; color: #007bff; font-size: 13px; text-transform: uppercase; letter-spacing: 0.5px; }
+        .math-line { margin: 4px 0; font-family: "Courier New", monospace; font-size: 12px; display: flex; justify-content: space-between; }
+        .formula-box { background: rgba(0,0,0,0.3); padding: 6px; border-radius: 4px; margin-top: 6px; border-left: 3px solid #ffc107; font-size: 11px; }
+        .control-group { margin: 8px 0; display: flex; flex-direction: column; }
+        .control-group label { margin-bottom: 3px; color: #aaa; font-size: 11px; }
+        input[type="range"] { flex: 1; accent-color: #007bff; cursor: pointer; }
+        .preset-row { display: flex; gap: 4px; margin-top: 6px; }
+        .btn { flex: 1; background: #2a2a2a; border: 1px solid #444; color: #fff; padding: 6px; font-size: 11px; border-radius: 4px; cursor: pointer; transition: 0.2s; }
+        .btn:hover { background: #3a3a3a; border-color: #007bff; }
+        #plotCanvas { background: #151515; border-radius: 4px; flex: 1; width: 100%; height: 100px; }
     </style>
+    <!-- Robust Production CDN Scripts -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+    <link rel="manifest" href="manifest.json">
 </head>
-<body class="flex flex-col antialiased selection:bg-cyan-500 selection:text-white">
+<body>
 
-    <!-- Header -->
-    <header class="bg-slate-900/90 backdrop-blur-md border-b border-slate-800 shrink-0 h-14 flex items-center justify-between px-4 z-40 sticky top-0">
-        <div class="flex items-center space-x-3">
-            <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-velocityColor-500 to-accelColor-500 flex items-center justify-center shadow-lg shadow-cyan-500/10">
-                <svg class="w-4 h-4 text-slate-950" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
-                </svg>
-            </div>
-            <div>
-                <h1 class="font-bold text-xs sm:text-sm tracking-tight bg-gradient-to-r from-velocityColor-400 via-lightConeColor-400 to-accelColor-400 bg-clip-text text-transparent">Minkowski Spacetime Suite</h1>
-                <p class="text-[9px] text-slate-400">Special Relativity & Rindler Horizons</p>
-            </div>
-        </div>
+    <!-- Tabbed Navigation Bar Header -->
+    <div id="app-header">
+        <button class="tab-button active" onclick="activateTab('minkowski-tab')">Minkowski Spacetime (SR)</button>
+        <button class="tab-button" onclick="activateTab('spherical-tab')">Curved Geometry (GR)</button>
+    </div>
 
-        <div class="hidden sm:flex items-center space-x-3 bg-slate-950/60 px-3 py-1 rounded-lg border border-slate-800 text-[11px] font-mono">
-            <div><span class="text-slate-400">γ:</span> <span id="badge-gamma" class="text-cyan-400 font-bold">1.250</span></div>
-            <span class="text-slate-700">|</span>
-            <div><span class="text-slate-400">U·A:</span> <span id="badge-dot" class="text-emerald-400 font-bold">0.0000</span></div>
-        </div>
-    </header>
+    <!-- MODULE 1: MINKOWSKI SPACETIME SIMULATOR (LOADS YOUR CODE VIA AN ISOLATED IFRAME) -->
+    <div id="minkowski-tab" class="module-viewport active">
+        <iframe src="minkowski.html" id="minkowski-frame"></iframe>
+    </div>
 
-    <!-- Main Viewports -->
-    <main class="w-full max-w-7xl mx-auto flex flex-col md:grid md:grid-cols-2 gap-4 p-3 md:p-6 pb-44">
-        <!-- Laboratory Frame (S) -->
-        <div class="relative bg-slate-900 rounded-2xl border border-slate-800 overflow-hidden flex flex-col shadow-2xl h-[400px] sm:h-[480px]">
-            <div class="absolute top-2 left-2 right-2 z-10 flex items-center justify-between pointer-events-none">
-                <div class="bg-slate-900/85 backdrop-blur-md px-3 py-1.5 rounded-xl border border-slate-800 text-xs font-medium flex items-center space-x-2 pointer-events-auto shadow-lg">
-                    <span class="w-2.5 h-2.5 rounded-full bg-lightConeColor-500 shadow-sm shadow-yellow-500"></span>
-                    <span>Laboratory Frame ($S$)</span>
+    <!-- MODULE 2: SPHERICAL TRIANGLE NON-EUCLIDEAN CURVED GEOMETRY -->
+    <div id="spherical-tab" class="module-viewport">
+        <div id="spherical-container">
+            <canvas id="canvas3d"></canvas>
+            
+            <!-- Mathematical Metric Telemetry Panel -->
+            <div id="math-hud" class="hud-panel">
+                <h4>Spherical Area Excess</h4>
+                <div class="math-line"><span>Angle Sum (Σα):</span><span id="val-sum">270.0°</span></div>
+                <div class="math-line"><span>Excess (E):</span><span id="val-excess">90.0°</span></div>
+                <div class="math-line"><span>Triangle Area:</span><span id="val-area">1.571 steradians</span></div>
+                <div class="math-line"><span>Sphere Covered:</span><span id="val-ratio">1/8 [12.5%]</span></div>
+                <div class="formula-box">
+                    <strong>Intrinsic Geometry Law:</strong><br>
+                    Excess E = (α + β + γ) - 180°<br>
+                    Area A = E × R² steradians
                 </div>
-                <div class="bg-slate-900/85 backdrop-blur-md px-2.5 py-1.5 rounded-xl border border-slate-800 text-[10px] font-mono text-slate-300 pointer-events-auto hidden sm:block">Cartesian $(ct, x)$</div>
-            </div>
-            <div class="flex-1 w-full h-full relative">
-                <canvas id="minkowskiCanvas1" class="w-full h-full block"></canvas>
-            </div>
-            <div class="absolute bottom-2 left-2 right-2 z-10 flex items-center justify-between pointer-events-none">
-                <div class="bg-slate-900/85 backdrop-blur-md px-2.5 py-1 rounded-lg border border-slate-800 text-[10px] font-mono text-slate-300 flex items-center space-x-1.5 pointer-events-auto">
-                    <span class="w-2 h-2 rounded-full bg-horizonColor-500 shrink-0"></span>
-                    <span>Event horizon: $x = ct - \rho$ ($\rho = 1/g$)</span>
-                </div>
-            </div>
-        </div>
-        <!-- Boosted Frame (S') -->
-        <div class="relative bg-slate-900 rounded-2xl border border-slate-800 overflow-hidden flex flex-col shadow-2xl h-[400px] sm:h-[480px]">
-            <div class="absolute top-2 left-2 right-2 z-10 flex items-center justify-between pointer-events-none">
-                <div class="bg-slate-900/85 backdrop-blur-md px-3 py-1.5 rounded-xl border border-slate-800 text-xs font-medium flex items-center space-x-2 pointer-events-auto shadow-lg">
-                    <span class="w-2.5 h-2.5 rounded-full bg-spaceAxisColor-500 shadow-sm shadow-violet-500"></span>
-                    <span>Boosted Frame ($S'$)</span>
-                </div>
-                <div class="bg-slate-900/85 backdrop-blur-md px-2.5 py-1.5 rounded-xl border border-slate-800 text-[10px] font-mono text-slate-300 pointer-events-auto hidden sm:block">Skewed $(ct', x')$</div>
-            </div>
-            <div class="flex-1 w-full h-full relative">
-                <canvas id="minkowskiCanvas2" class="w-full h-full block"></canvas>
-            </div>
-            <div class="absolute bottom-2 left-2 right-2 z-10 flex items-center justify-between pointer-events-none">
-                <div class="bg-slate-900/85 backdrop-blur-md px-2.5 py-1 rounded-lg border border-slate-800 text-[10px] font-mono text-slate-300 flex items-center space-x-2 pointer-events-auto">
-                    <span class="flex items-center space-x-1"><span class="w-2 h-2 rounded-full bg-velocityColor-400"></span><span class="text-velocityColor-400 font-semibold">ct'</span></span>
-                    <span class="text-slate-600">|</span>
-                    <span class="flex items-center space-x-1"><span class="w-2 h-2 rounded-full bg-spaceAxisColor-400"></span><span class="text-spaceAxisColor-400 font-semibold">x'</span></span>
-                </div>
-            </div>
-        </div>
-    </main>
-
-    <!-- Floating Controls Panel -->
-    <div class="fixed bottom-4 left-1/2 -translate-x-1/2 z-30 w-[94%] max-w-2xl bg-slate-900/90 backdrop-blur-md border border-slate-800 rounded-2xl p-3 sm:p-4 shadow-2xl">
-        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
-            <!-- Velocity Slider -->
-            <div class="space-y-1 bg-slate-950/60 p-2 rounded-xl border border-slate-800/80">
-                <div class="flex items-center justify-between text-xs">
-                    <label for="beta-slider" class="text-slate-300 font-medium">Velocity ($\beta$)</label>
-                    <span id="beta-val" class="font-mono text-velocityColor-400 font-bold">0.60</span>
-                </div>
-                <input id="beta-slider" type="range" min="-0.99" max="0.99" step="0.01" value="0.60" oninput="updateSimulation()" class="w-full accent-cyan-500 bg-slate-800 h-1.5 rounded-lg cursor-pointer">
             </div>
 
-            <!-- Proper Acceleration Slider -->
-            <div class="space-y-1 bg-slate-950/60 p-2 rounded-xl border border-slate-800/80">
-                <div class="flex items-center justify-between text-xs">
-                    <label for="accel-slider" class="text-slate-300 font-medium">Proper Accel ($g$)</label>
-                    <span id="accel-val" class="font-mono text-accelColor-400 font-bold">1.00</span>
+            <!-- Configuration Adjustment Panel Controls -->
+            <div id="control-hud" class="hud-panel">
+                <h4>Controls</h4>
+                <div class="control-group">
+                    <label>Triangle Dimension Size (Angle Sum)</label>
+                    <input type="range" id="size-slider" min="181" max="890" value="270">
                 </div>
-                <input id="accel-slider" type="range" min="0.1" max="3.0" step="0.05" value="1.0" oninput="updateSimulation()" class="w-full accent-orange-500 bg-slate-800 h-1.5 rounded-lg cursor-pointer">
+                <div class="control-group">
+                    <label>Sphere Translucency (Opacity)</label>
+                    <input type="range" id="opacity-slider" min="0" max="100" value="30">
+                </div>
+                <div class="control-group">
+                    <label>Grid Line Intensity</label>
+                    <input type="range" id="grid-slider" min="10" max="100" value="60">
+                </div>
+                <div class="preset-row">
+                    <button class="btn" onclick="setPreset(195)">180°</button>
+                    <button class="btn" onclick="setPreset(270)">270°</button>
+                    <button class="btn" onclick="setPreset(360)">360°</button>
+                    <button class="btn" onclick="setPreset(720)">720°</button>
+                </div>
             </div>
 
-            <!-- Time Parameter Slider -->
-            <div class="space-y-1 bg-slate-950/60 p-2 rounded-xl border border-slate-800/80">
-                <div class="flex items-center justify-between text-xs">
-                    <label for="time-slider" class="text-slate-300 font-medium">Time ($t$)</label>
-                    <span id="time-val" class="font-mono text-purple-400 font-bold">1.50</span>
-                </div>
-                <input id="time-slider" type="range" min="-5.0" max="5.0" step="0.1" value="1.5" oninput="updateSimulation()" class="w-full accent-purple-500 bg-slate-800 h-1.5 rounded-lg cursor-pointer">
+            <!-- Mathematical Curve Tracking Overlay -->
+            <div id="graph-hud" class="hud-panel">
+                <h4 style="margin-bottom: 2px;">Area Excess Profile (Steradians vs Angle Sum)</h4>
+                <canvas id="plotCanvas"></canvas>
             </div>
         </div>
     </div>
 
-    <!-- iOS Install Helper Banner -->
-    <div id="ios-install-banner" class="hidden fixed bottom-24 left-1/2 -translate-x-1/2 z-50 w-[94%] max-w-2xl bg-slate-900/95 backdrop-blur-md border border-cyan-500/40 rounded-2xl p-3 sm:p-4 shadow-2xl flex items-center justify-between text-xs sm:text-sm">
-        <div class="flex items-center space-x-3">
-            <div class="w-10 h-10 rounded-xl bg-cyan-500/20 flex items-center justify-center text-cyan-400 shrink-0 font-bold text-lg">⚡</div>
-            <div>
-                <p class="font-semibold text-white">Install Spacetime Suite</p>
-                <p class="text-slate-300 text-[11px]">Tap <span class="text-cyan-400 font-bold">Share</span> ⎋ then <span class="text-white font-bold">"Add to Home Screen"</span></p>
-            </div>
-        </div>
-        <button onclick="dismissPrompt('ios')" class="text-slate-400 hover:text-white px-2 py-1 text-base font-bold">×</button>
-    </div>
-
-    <!-- Android Install Helper Banner -->
-    <div id="android-install-banner" class="hidden fixed bottom-24 left-1/2 -translate-x-1/2 z-50 w-[94%] max-w-2xl bg-slate-900/95 backdrop-blur-md border border-cyan-500/40 rounded-2xl p-3 sm:p-4 shadow-2xl flex items-center justify-between text-xs sm:text-sm">
-        <div class="flex items-center space-x-3">
-            <div class="w-10 h-10 rounded-xl bg-cyan-500/20 flex items-center justify-center text-cyan-400 shrink-0 font-bold text-lg">⚡</div>
-            <div>
-                <p class="font-semibold text-white">Install Spacetime Suite</p>
-                <p class="text-slate-300 text-[11px]">Install app for a native full-screen experience</p>
-            </div>
-        </div>
-        <div class="flex items-center space-x-2">
-            <button onclick="installAndroidApp()" class="bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-bold px-3 py-1.5 rounded-xl text-xs transition">Install</button>
-            <button onclick="dismissPrompt('android')" class="text-slate-400 hover:text-white px-2 py-1 text-base font-bold">×</button>
-        </div>
-    </div>
-
-    <!-- Application Script -->
     <script>
-        let betaInertial = 0.6, accel = 1.0, timeParam = 1.5, deferredPrompt = null;
-
-        function updateSimulation() {
-            betaInertial = parseFloat(document.getElementById('beta-slider').value);
-            accel = parseFloat(document.getElementById('accel-slider').value);
-            timeParam = parseFloat(document.getElementById('time-slider').value);
-
-            document.getElementById('beta-val').innerText = betaInertial.toFixed(2);
-            document.getElementById('accel-val').innerText = accel.toFixed(2);
-            document.getElementById('time-val').innerText = timeParam.toFixed(2);
-
-            const gamma = 1.0 / Math.sqrt(Math.max(0.0001, 1.0 - betaInertial * betaInertial));
-            const u0 = gamma, u1 = gamma * betaInertial;
-            const a0 = accel > 0 ? accel * gamma * gamma * betaInertial : 0;
-            const a1 = accel > 0 ? accel * gamma * gamma : 0;
-            const dotProduct = -u0 * a0 + u1 * a1;
-
-            document.getElementById('badge-gamma').innerText = gamma.toFixed(3);
-            document.getElementById('badge-dot').innerText = dotProduct.toFixed(4);
-
-            renderCanvas1();
-            renderCanvas2();
+        // --- Service Worker Hook Injection ---
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('./sw.js');
         }
 
-        function setupCanvas(canvasId) {
-            const canvas = document.getElementById(canvasId);
-            const ctx = canvas.getContext('2d');
-            const dpr = window.devicePixelRatio || 1;
-            const rect = canvas.getBoundingClientRect();
-            canvas.width = rect.width * dpr;
-            canvas.height = rect.height * dpr;
-            ctx.scale(dpr, dpr);
-            return { ctx, width: rect.width, height: rect.height };
+        // --- Navigation Frame Switching State Engine ---
+        function activateTab(targetTabId) {
+            document.querySelectorAll('.module-viewport').forEach(view => view.classList.remove('active'));
+            document.querySelectorAll('.tab-button').forEach(btn => btn.classList.remove('active'));
+            
+            document.getElementById(targetTabId).classList.add('active');
+            if (window.event && window.event.currentTarget) {
+                window.event.currentTarget.classList.add('active');
+            }
+            
+            // Force WebGL Canvas view resizing update loops upon tab selection switches
+            window.dispatchEvent(new Event('resize'));
         }
 
-        function renderCanvas1() {
-            const { ctx, width, height } = setupCanvas('minkowskiCanvas1');
-            ctx.clearRect(0, 0, width, height);
+        // --- 3D Graphics Engine Variables & Configurations ---
+        let scene, camera, renderer, controls, sphereMesh, gridChildFront, gridChildBack, triangleLines, angleMarkerGroup;
+        const SPHERE_RADIUS = 1.6;
+        const canvas3d = document.getElementById('canvas3d');
 
-            const ox = width / 2, oy = height / 2, scale = Math.min(width, height) / 12;
+        function init3D() {
+            scene = new THREE.Scene();
+            camera = new THREE.PerspectiveCamera(45, canvas3d.clientWidth / canvas3d.clientHeight, 0.1, 100);
+            camera.position.set(2.5, 2.0, 3.5);
 
-            // Cartesian grid
-            ctx.strokeStyle = '#334155';
-            ctx.lineWidth = 1.1;
-            for (let i = -6; i <= 6; i++) {
-                ctx.beginPath(); ctx.moveTo(ox + i * scale, 0); ctx.lineTo(ox + i * scale, height); ctx.stroke();
-                ctx.beginPath(); ctx.moveTo(0, oy - i * scale); ctx.lineTo(width, oy - i * scale); ctx.stroke();
+            renderer = new THREE.WebGLRenderer({ canvas: canvas3d, antialias: true, alpha: true });
+            renderer.setSize(canvas3d.clientWidth, canvas3d.clientHeight);
+            renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+
+            controls = new THREE.OrbitControls(camera, renderer.domElement);
+            controls.enableDamping = true; controls.dampingFactor = 0.05; 
+            controls.rotateSpeed = -0.6; // Inverted for intuitive direct globe surface rotation tracking
+
+            const ambient = new THREE.AmbientLight(0xffffff, 0.4); scene.add(ambient);
+            const dir1 = new THREE.DirectionalLight(0xffffff, 0.8); dir1.position.set(5, 5, 5); scene.add(dir1);
+
+            // Core Translucent Surface Geometry Mesh Base Shell
+            const sphereGeo = new THREE.SphereGeometry(SPHERE_RADIUS, 32, 32);
+            const sphereMat = new THREE.MeshStandardMaterial({ color: 0x112244, roughness: 0.4, metalness: 0.1, transparent: true, opacity: 0.3, side: THREE.DoubleSide });
+            sphereMesh = new THREE.Mesh(sphereGeo, sphereMat); scene.add(sphereMesh);
+            // Bolder, Sharp Double-Sided Coordinate Grids
+            const gridGeo = new THREE.SphereGeometry(SPHERE_RADIUS - 0.002, 24, 12);
+            gridChildBack = new THREE.Mesh(gridGeo, new THREE.MeshBasicMaterial({ color: 0xaaaaaa, wireframe: true, transparent: true, opacity: 0.15, side: THREE.BackSide })); scene.add(gridChildBack);
+            gridChildFront = new THREE.Mesh(gridGeo, new THREE.MeshBasicMaterial({ color: 0xffffff, wireframe: true, transparent: true, opacity: 0.35, side: THREE.FrontSide })); scene.add(gridChildFront);
+            // Intrinsic Elements Mapping Tracks
+            triangleLines = new THREE.LineSegments(new THREE.BufferGeometry(), new THREE.LineBasicMaterial({ color: 0xff3b30, linewidth: 3 })); scene.add(triangleLines);
+            angleMarkerGroup = new THREE.Group(); scene.add(angleMarkerGroup);
+            document.getElementById('size-slider').addEventListener('input', updateGeometry);
+            document.getElementById('opacity-slider').addEventListener('input', updateMaterials);
+            document.getElementById('grid-slider').addEventListener('input', updateMaterials);
+            updateGeometry(); animate();
             }
-
-            // Light Cones
-            ctx.strokeStyle = '#eab308'; ctx.lineWidth = 2.5; ctx.setLineDash([6, 4]);
-            ctx.beginPath();
-            ctx.moveTo(ox - scale * 6, oy + scale * 6); ctx.lineTo(ox + scale * 6, oy - scale * 6);
-            ctx.moveTo(ox - scale * 6, oy - scale * 6); ctx.lineTo(ox + scale * 6, oy + scale * 6);
-            ctx.stroke(); ctx.setLineDash([]);
-
-            // Lab Axes
-            ctx.strokeStyle = '#64748b'; ctx.lineWidth = 1.5;
-            ctx.beginPath(); ctx.moveTo(ox, height); ctx.lineTo(ox, 0); ctx.stroke();
-            ctx.beginPath(); ctx.moveTo(0, oy); ctx.lineTo(width, oy); ctx.stroke();
-
-            ctx.fillStyle = '#94a3b8'; ctx.font = '11px JetBrains Mono, monospace';
-            ctx.fillText('ct', ox + 8, 20); ctx.fillText('x', width - 20, oy - 8);
-
-            // Event Horizon
-            ctx.strokeStyle = '#ec4899'; ctx.lineWidth = 2; ctx.setLineDash([5, 5]);
-            ctx.beginPath();
-            const horizonOffset = scale * (1.0 / accel);
-            ctx.moveTo(0, oy + ox - horizonOffset); ctx.lineTo(width, oy + ox - width - horizonOffset);
-            ctx.stroke(); ctx.setLineDash([]);
-
-            // Uniform Motion Worldline
-            ctx.strokeStyle = '#06b6d4'; ctx.lineWidth = 3; ctx.beginPath();
-            let firstBeta = true;
-            for (let t = -6; t <= 6; t += 0.05) {
-                const px = ox + (betaInertial * t) * scale, py = oy - t * scale;
-                if (firstBeta) { ctx.moveTo(px, py); firstBeta = false; } else { ctx.lineTo(px, py); }
+            // --- Geometric Path Tracing Functions ---
+            function getGreatCircleArc(v1, v2) {
+            const points = []; const count = 60;
+            for (let i = 0; i <= count; i++) {
+            points.push(new THREE.Vector3().copy(v1).slerp(v2, i / count).normalize().multiplyScalar(SPHERE_RADIUS + 0.005));
             }
-            ctx.stroke();
-
-            const currTPx = ox + (betaInertial * timeParam) * scale;
-            const currTPy = oy - timeParam * scale;
-            ctx.fillStyle = '#22d3ee'; ctx.beginPath(); ctx.arc(currTPx, currTPy, 5, 0, 2 * Math.PI); ctx.fill();
-
-            // Accelerated Worldline
-            let hypPx = 0, hypPy = 0;
-            if (accel > 0) {
-                ctx.strokeStyle = '#f97316'; ctx.lineWidth = 3; ctx.beginPath();
-                let firstHyp = true;
-                for (let t = -7; t <= 7; t += 0.01) {
-                    const tAbs = Math.abs(t);
-                    const xHyp = (t >= 0 ? 1 : -1) * (1.0 / accel) * (Math.sqrt(1.0 + accel * accel * tAbs * tAbs) - 1.0);
-                    const px = ox + xHyp * scale, py = oy - t * scale;
-                    if (firstHyp) { ctx.moveTo(px, py); firstHyp = false; } else { ctx.lineTo(px, py); }
-                }
-                ctx.stroke();
-
-                const tParamAbs = Math.abs(timeParam);
-                const currXHyp = (timeParam >= 0 ? 1 : -1) * (1.0 / accel) * (Math.sqrt(1.0 + accel * accel * tParamAbs * tParamAbs) - 1.0);
-                hypPx = ox + currXHyp * scale;
-                hypPy = oy - timeParam * scale;
-
-                ctx.fillStyle = '#fb923c'; ctx.beginPath(); ctx.arc(hypPx, hypPy, 5, 0, 2 * Math.PI); ctx.fill();
+            return points;
             }
-
-            // Labels
-            ctx.font = '10px JetBrains Mono, monospace';
-            const dist = Math.hypot(currTPx - hypPx, currTPy - hypPy);
-
-            ctx.fillStyle = '#0f172a'; ctx.fillRect(currTPx + 8, currTPy - 16, 120, 18);
-            ctx.strokeStyle = '#06b6d4'; ctx.strokeRect(currTPx + 8, currTPy - 16, 120, 18);
-            ctx.fillStyle = '#22d3ee'; ctx.fillText(`Uniform (β=${betaInertial.toFixed(2)})`, currTPx + 12, currTPy - 3);
-
-            if (accel > 0) {
-                const yOffset = dist < 45 ? 20 : -16;
-                ctx.fillStyle = '#0f172a'; ctx.fillRect(hypPx + 8, hypPy + yOffset, 120, 18);
-                ctx.strokeStyle = '#f97316'; ctx.strokeRect(hypPx + 8, hypPy + yOffset, 120, 18);
-                ctx.fillStyle = '#fb923c'; ctx.fillText(`Accel (g=${accel.toFixed(2)})`, hypPx + 12, hypPy + yOffset + 13);
+            function createCurvedArcPoints(vCenter, vA, vB, arcRadius) {
+            const tA = new THREE.Vector3().copy(vA).projectOnPlane(vCenter).normalize();
+            const tB = new THREE.Vector3().copy(vB).projectOnPlane(vCenter).normalize();
+            const points = []; const count = 30;
+            for(let i=0; i<=count; i++) {
+            const pLocal = new THREE.Vector3().copy(tA).slerp(tB, i / count).normalize().multiplyScalar(arcRadius);
+            points.push(new THREE.Vector3().copy(vCenter).multiplyScalar(Math.sqrt(SPHERE_RADIUS2 - arcRadius2)).add(pLocal));
             }
-        }
-
-        function renderCanvas2() {
-            const { ctx, width, height } = setupCanvas('minkowskiCanvas2');
-            ctx.clearRect(0, 0, width, height);
-
-            const ox = width / 2, oy = height / 2, scale = Math.min(width, height) / 12;
-
-            // Light Cones
-            ctx.strokeStyle = '#eab308'; ctx.lineWidth = 2.5; ctx.setLineDash([6, 4]);
-            ctx.beginPath();
-            ctx.moveTo(ox - scale * 6, oy + scale * 6); ctx.lineTo(ox + scale * 6, oy - scale * 6);
-            ctx.moveTo(ox - scale * 6, oy - scale * 6); ctx.lineTo(ox + scale * 6, oy + scale * 6);
-            ctx.stroke(); ctx.setLineDash([]);
-
-            // Lab Reference Axes
-            ctx.strokeStyle = '#475569'; ctx.lineWidth = 1.2; ctx.setLineDash([3, 3]);
-            ctx.beginPath(); ctx.moveTo(ox, height); ctx.lineTo(ox, 0); ctx.stroke();
-            ctx.beginPath(); ctx.moveTo(0, oy); ctx.lineTo(width, oy); ctx.stroke();
-            ctx.setLineDash([]);
-
-            const gamma = 1.0 / Math.sqrt(Math.max(0.0001, 1.0 - betaInertial * betaInertial));
-
-            // Boosted Grid (S' Frame)
-            ctx.strokeStyle = 'rgba(148, 163, 184, 0.45)'; 
-            ctx.lineWidth = 1.1;
-
-        // 1. Lines of constant x' (varying ctp)
-            for (let x_prime = -6; x_prime <= 6; x_prime++) {
-                ctx.beginPath();
-                let first = true;
-                for (let ctp = -7; ctp <= 7; ctp += 0.2) {
-                    const px = ox + (gamma * (x_prime + betaInertial * ctp)) * scale;
-                    const py = oy - (gamma * (ctp + betaInertial * x_prime)) * scale;
-                    if (first) { ctx.moveTo(px, py); first = false; } else { ctx.lineTo(px, py); }
-                }
-                ctx.stroke();
+            return points;
             }
-    
-            // 2. Lines of constant ct' (varying x_prime) --- THIS WAS MISSING ---
-            for (let ct_prime = -6; ct_prime <= 6; ct_prime++) {
-                ctx.beginPath();
-                let first = true;
-                for (let xp = -7; xp <= 7; xp += 0.2) {
-                    const px = ox + (gamma * (xp + betaInertial * ct_prime)) * scale;
-                    const py = oy - (gamma * (ct_prime + betaInertial * xp)) * scale;
-                    if (first) { ctx.moveTo(px, py); first = false; } else { ctx.lineTo(px, py); }
-                }
-                ctx.stroke();
+            function createSquareCornerPoints(vCenter, vA, vB, size = 0.15) {
+            const tA = new THREE.Vector3().copy(vA).projectOnPlane(vCenter).normalize().multiplyScalar(size);
+            const tB = new THREE.Vector3().copy(vB).projectOnPlane(vCenter).normalize().multiplyScalar(size);
+            const pt1 = new THREE.Vector3().copy(vCenter).multiplyScalar(SPHERE_RADIUS).add(tA).normalize().multiplyScalar(SPHERE_RADIUS + 0.008);
+            const pt2 = new THREE.Vector3().copy(vCenter).multiplyScalar(SPHERE_RADIUS).add(tA).add(tB).normalize().multiplyScalar(SPHERE_RADIUS + 0.008);
+            const pt3 = new THREE.Vector3().copy(vCenter).multiplyScalar(SPHERE_RADIUS).add(tB).normalize().multiplyScalar(SPHERE_RADIUS + 0.008);
+            return [pt1, pt2, pt2, pt3];
             }
-            // ct' and x' Axes
-            ctx.strokeStyle = '#06b6d4'; ctx.lineWidth = 3; ctx.beginPath();
-            for (let ctp = -7; ctp <= 7; ctp += 0.1) {
-                const px = ox + (gamma * betaInertial * ctp) * scale, py = oy - (gamma * ctp) * scale;
-                if (ctp === -7) ctx.moveTo(px, py); else ctx.lineTo(px, py);
-            }
-            ctx.stroke();
-
-            ctx.strokeStyle = '#8b5cf6'; ctx.lineWidth = 3; ctx.beginPath();
-            for (let xp = -7; xp <= 7; xp += 0.1) {
-                const px = ox + (gamma * xp) * scale, py = oy - (gamma * betaInertial * xp) * scale;
-                if (xp === -7) ctx.moveTo(px, py); else ctx.lineTo(px, py);
-            }
-            ctx.stroke();
-        }
-
-        // --- PWA Installation Logic ---
-        function dismissPrompt(type) {
-            document.getElementById(`${type}-install-banner`).classList.add('hidden');
-            localStorage.setItem(`${type}_prompt_dismissed`, 'true');
-        }
-
-        window.addEventListener('beforeinstallprompt', (e) => {
-            e.preventDefault();
-            deferredPrompt = e;
-            if (!localStorage.getItem('android_prompt_dismissed')) {
-                document.getElementById('android-install-banner').classList.remove('hidden');
-            }
-        });
-
-        function installAndroidApp() {
-            if (!deferredPrompt) return;
-            deferredPrompt.prompt();
-            deferredPrompt.userChoice.then(() => {
-                deferredPrompt = null;
-                document.getElementById('android-install-banner').classList.add('hidden');
+            // --- Core Intrinsic Mathematics Equations Update Engine ---
+            function updateGeometry() {
+            const totalSum = parseFloat(document.getElementById('size-slider').value);
+            const excessDeg = totalSum - 180.0; const excessRad = (excessDeg * Math.PI) / 180.0;
+            const singleAngleRad = ((totalSum / 3.0) * Math.PI) / 180.0;
+            const sideAlpha = Math.acos(Math.max(-1, Math.min(1, (Math.cos(singleAngleRad) + Math.cos(singleAngleRad)**2) / Math.sin(singleAngleRad)**2)));
+            const vA = new THREE.Vector3(0, 1, 0);
+            const vB = new THREE.Vector3(Math.sin(sideAlpha), Math.cos(sideAlpha), 0);
+            const vC = new THREE.Vector3(Math.sin(sideAlpha) * Math.cos(120Math.PI/180), Math.cos(sideAlpha), Math.sin(sideAlpha) * Math.sin(120Math.PI/180));
+            let arcAB = getGreatCircleArc(vA, vB); let arcBC = getGreatCircleArc(vB, vC); let arcCA = getGreatCircleArc(vC, vA);
+            const linePoints = [];
+            for (let i = 0; i < arcAB.length - 1; i++) linePoints.push(arcAB[i], arcAB[i+1]);
+            for (let i = 0; i < arcBC.length - 1; i++) linePoints.push(arcBC[i], arcBC[i+1]);
+            for (let i = 0; i < arcCA.length - 1; i++) linePoints.push(arcCA[i], arcCA[i+1]);
+            triangleLines.geometry.setFromPoints(linePoints);
+            while(angleMarkerGroup.children.length > 0) angleMarkerGroup.remove(angleMarkerGroup.children[0]);
+            const vertices = [{ center: vA, left: vB, right: vC }, { center: vB, left: vC, right: vA }, { center: vC, left: vA, right: vB }];
+            const markerColor = (totalSum > 540) ? 0x28a745 : 0xffc107;
+            const markerMat = new THREE.LineBasicMaterial({ color: markerColor, linewidth: 2.5, depthWrite: false });
+            vertices.forEach(v => {
+            let pts = [];
+            if (Math.abs(totalSum - 270.0) < 1.0) pts = createSquareCornerPoints(v.center, v.left, v.right, 0.2);
+            else pts = createCurvedArcPoints(v.center, totalSum > 540 ? v.right : v.left, totalSum > 540 ? v.left : v.right, 0.2);
+            const mLine = new THREE.LineSegments(new THREE.BufferGeometry().setFromPoints(pts), markerMat);
+            mLine.renderOrder = 1; angleMarkerGroup.add(mLine);
             });
-        }
-
-        window.addEventListener('load', () => {
-            updateSimulation();
-            window.addEventListener('resize', () => { updateSimulation(); });
-
-            // Check iOS
-            const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
-            const isStandalone = window.navigator.standalone || window.matchMedia('(display-mode: standalone)').matches;
-            if (isIOS && !isStandalone && !localStorage.getItem('ios_prompt_dismissed')) {
-                document.getElementById('ios-install-banner').classList.remove('hidden');
+            document.getElementById('val-sum').innerText = totalSum.toFixed(1) + "°";
+            document.getElementById('val-excess').innerText = excessDeg.toFixed(1) + "°";
+            document.getElementById('val-area').innerText = ${(excessRad * SPHERE_RADIUS**2).toFixed(3)} steradians [${(excessDeg/180).toFixed(3)}π];
+            let fractionStr = [${((excessDeg / 720.0) * 100).toFixed(1)}%];
+            if (Math.abs(totalSum - 270.0) < 1.0) fractionStr = "1/8 [12.5%]";
+            if (Math.abs(totalSum - 360.0) < 1.0) fractionStr = "1/4 [25.0%]";
+            if (Math.abs(totalSum - 540.0) < 1.0) fractionStr = "1/2 [50.0%]";
+            document.getElementById('val-ratio').innerText = fractionStr;
+            drawGraph(totalSum);
             }
-
-            // Service Worker
-            if ('serviceWorker' in navigator) {
-                navigator.serviceWorker.register('/spacetime/sw.js', { scope: '/spacetime/' })
-                    .catch((err) => console.log('ServiceWorker registration failed:', err));
+            function updateMaterials() {
+            sphereMesh.material.opacity = parseFloat(document.getElementById('opacity-slider').value) / 100.0;
+            gridChildFront.material.opacity = (parseFloat(document.getElementById('grid-slider').value) / 100.0) * 0.6;
+            gridChildBack.material.opacity = (parseFloat(document.getElementById('grid-slider').value) / 100.0) * 0.25;
             }
-        });
-    </script>
-</body>
-</html>
+            function setPreset(val) { document.getElementById('size-slider').value = val; updateGeometry(); }
+            // --- Native Canvas Graph Tracker Profile ---
+            function drawGraph(activeSum) {
+            const canvas = document.getElementById('plotCanvas'); const ctx = canvas.getContext('2d');
+            const w = canvas.clientWidth; const h = canvas.clientHeight;
+            canvas.width = w * window.devicePixelRatio; canvas.height = h * window.devicePixelRatio;
+            ctx.scale(window.devicePixelRatio, window.devicePixelRatio);
+            ctx.clearRect(0, 0, w, h);
+            const padL = 40, padR = 20, padT = 15, padB = 20, graphW = w - padL - padR, graphH = h - padT - padB;
+            const mapX = x => padL + ((x - 180) / 720) * graphW, mapY = y => padT + graphH - (y / (4 * Math.PI)) * graphH;
+            ctx.strokeStyle = '#2d2d2d'; ctx.lineWidth = 1;
+            [180, 270, 360, 540, 720, 900].forEach(tick => { ctx.beginPath(); ctx.moveTo(mapX(tick), padT); ctx.lineTo(mapX(tick), padT + graphH); ctx.stroke(); });
+            ctx.beginPath(); ctx.strokeStyle = '#007bff'; ctx.lineWidth = 2;
+            for(let s = 180; s <= 900; s += 5) { if(s === 180) ctx.moveTo(mapX(s), mapY(((s - 180) * Math.PI) / 180)); else ctx.lineTo(mapX(s), mapY(((s - 180) * Math.PI) / 180)); }
+            ctx.stroke();
+            ctx.fillStyle = '#888888'; ctx.font = '10px sans-serif'; ctx.textBaseline = 'top';
+            ctx.fillText('180°', mapX(180) - 8, padT + graphH + 4); ctx.fillText('540°', mapX(540) - 10, padT + graphH + 4); ctx.fillText('900°', mapX(900) - 10, padT + graphH + 4);
+            ctx.textBaseline = 'middle'; ctx.textAlign = 'right';
+            ctx.fillText('0', padL - 6, mapY(0)); ctx.fillText('2π', padL - 6, mapY(2 * Math.PI)); ctx.fillText('4π', padL - 6, mapY(4 * Math.PI));
+            ctx.beginPath(); ctx.fillStyle = '#ff3b30'; ctx.arc(mapX(activeSum), mapY(((activeSum - 180) * Math.PI) / 180), 5, 0, 2 * Math.PI); ctx.fill();
+            }
+            // --- Continuous Render Animation Loop ---
+            function animate() { requestAnimationFrame(animate); if (controls) controls.update(); if (renderer) renderer.render(scene, camera); }
+            window.addEventListener('resize', () => {
+            if (!canvas3d || !camera || !renderer) return;
+            camera.aspect = canvas3d.clientWidth / canvas3d.clientHeight; camera.updateProjectionMatrix();
+            renderer.setSize(canvas3d.clientWidth, canvas3d.clientHeight);
+            drawGraph(parseFloat(document.getElementById('size-slider').value));
+            });
+            window.onload = () => { init3D(); updateMaterials(); };
+
+
+        
